@@ -12,11 +12,11 @@ namespace DIALOGUE
         private const string commandRegexPattern = @"[\w\[\]]*[^\s]\(";
         public static DIALOGUE_LINE Parse(string rawLine)
         {
-            //Debug.Log($"Parsing line - '{rawLine}'");
+            Debug.Log($"Parsing line - '{rawLine}'");
 
             (string speaker, string dialogue, string commands) = RipContent(rawLine);
 
-            //Debug.Log($"Speaker = '{speaker}'\nDialogue = '{dialogue}'\nCommands = '{commands}'");
+            Debug.Log($"Speaker = '{speaker}'\nDialogue = '{dialogue}'\nCommands = '{commands}'");
 
             return new DIALOGUE_LINE(speaker, dialogue, commands);
         }
@@ -46,20 +46,28 @@ namespace DIALOGUE
             }
 
             //Debug.Log(rawLine.Substring(dialogueStart + 1, (dialogueEnd - dialogueStart) - 1));
+
             //Identify Command Pattern
             Regex commandRegex = new Regex(commandRegexPattern);
-            Match match = commandRegex.Match(rawLine);
+            MatchCollection matches = commandRegex.Matches(rawLine);
             int commandStart = -1;
-            if (match.Success)
-            {
-                commandStart = match.Index;
 
-                if (dialogueStart == -1 && dialogueEnd == -1)
-                    return ("", "", rawLine.Trim());
+            foreach (Match match in matches)
+            {
+                if (match.Index < dialogueStart || match.Index > dialogueEnd)
+                {
+                    commandStart = match.Index;
+                    break;
+                }
             }
+
+            if (commandStart != -1 && (dialogueStart == -1 && dialogueEnd == -1))
+                return ("", "", rawLine.Trim());
+
 
             if (dialogueStart != -1 && dialogueEnd != -1 && (commandStart == -1 || commandStart > dialogueEnd))
             {
+                //we have valid dialogue
                 speaker = rawLine.Substring(0, dialogueStart).Trim();
                 dialogue = rawLine.Substring(dialogueStart + 1, dialogueEnd - dialogueStart - 1).Replace("\\\"", "\"");
                 if (commandStart != -1)
@@ -68,8 +76,9 @@ namespace DIALOGUE
             else if (commandStart != -1 && dialogueStart > commandStart)
                 commands = rawLine;
             else
-                speaker = rawLine;
+                dialogue = rawLine;
 
+            //Debug.Log($"DS={dialogueStart}, DE={dialogueEnd}, CS={commandStart}");
             return (speaker, dialogue, commands);
         }
     }
