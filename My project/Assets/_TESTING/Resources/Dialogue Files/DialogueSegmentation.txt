@@ -1,0 +1,6 @@
+This is a random line of dialogue here
+Elena "command(arguments go here)"
+Elena "(This is a thought)"
+Elena "This is some dialogue" command(args go here)
+command(more args go here), argCom(yes another one)
+command("This is another one again")
