@@ -13,16 +13,16 @@ MonoBehaviour:
   m_Name: Character Configuration Asset
   m_EditorClassIdentifier: 
   characters:
-  - name: "Fort\xE6ller"
-    alias: f
-    characterType: 0
+  - name: Karina
+    alias: k
+    characterType: 1
     nameColor: {r: 0.9757813, g: 1, b: 0.21234995, a: 1}
     dialogueColor: {r: 0.9371355, g: 0.9528302, b: 0.4270575, a: 1}
     nameFont: {fileID: 11400000, guid: 64e683bc710802043b171e46ccaab2cb, type: 2}
     dialogueFont: {fileID: 11400000, guid: d05e8b7a153732e4ab44c0468b568b45, type: 2}
   - name: Demian
     alias: d
-    characterType: 0
+    characterType: 1
     nameColor: {r: 0.2117647, g: 0.9145757, b: 1, a: 1}
     dialogueColor: {r: 0.532302, g: 0.9320064, b: 0.9811321, a: 1}
     nameFont: {fileID: 11400000, guid: 64e683bc710802043b171e46ccaab2cb, type: 2}
