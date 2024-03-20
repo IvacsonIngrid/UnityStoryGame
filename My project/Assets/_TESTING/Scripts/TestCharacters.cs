@@ -26,22 +26,34 @@ namespace TESTING
         //masodik proba
         IEnumerator Test()
         {
-            Character guard1 = CreateCharacter("Guard1 as Generic");
-            Character guard2 = CreateCharacter("Guard2 as Generic");
-            Character guard3 = CreateCharacter("Guard3 as Generic");
+            Character generic = CreateCharacter("Guard1 as Generic");
+            Character raelin = CreateCharacter("Raelin");
+            Character demian = CreateCharacter("Demian");
+            Character melory = CreateCharacter("Melory");
 
-            guard1.Show();
-            guard2.Show();
-            guard3.Show();
+            generic.SetPosition(Vector2.zero);
+            melory.SetPosition(new Vector2(0.2f, 0.05f));
+            demian.SetPosition(Vector2.one);
+            //melory.SetPosition(new Vector2(2, 1));
 
-            guard1.SetDialogueFont(tempFont);
-            guard1.SetNameFont(tempFont);
-            guard2.SetDialogueColor(Color.cyan);
-            guard3.SetNameColor(Color.red);
+            //generic.Show();
+            melory.Show();
+            demian.Show();
 
-            yield return guard1.Say("It is important");
-            yield return guard2.Say("What happend?");
-            yield return guard3.Say("I don't know...");
+            //elmegy balrol jobbra s vissza, smooth = lassitja a megerkezes pillanataban, nem olyan hirtelen tortenik
+            yield return generic.Show();
+            yield return generic.MoveToPosition(Vector2.one, smooth : true);
+            yield return generic.MoveToPosition(Vector2.zero, smooth : true);
+
+
+            generic.SetDialogueFont(tempFont);
+            generic.SetNameFont(tempFont);
+            melory.SetDialogueColor(Color.cyan);
+            demian.SetNameColor(Color.red);
+
+            yield return generic.Say("It is important");
+            yield return melory.Say("What happend?");
+            yield return demian.Say("I don't know...");
 
             yield return null;
         }

@@ -3795,6 +3795,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Character - [Amara]
       objectReference: {fileID: 0}
+    - target: {fileID: 2563157296377949273, guid: 8c2a6b87e4cf18a4da4fbfb0c04a2b75,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5619750071408196110, guid: 8c2a6b87e4cf18a4da4fbfb0c04a2b75,
         type: 3}
       propertyPath: m_Pivot.x
@@ -3918,6 +3923,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Character - [Demian]
+      objectReference: {fileID: 0}
+    - target: {fileID: 2875737117262924657, guid: 8d82de8364d5d4f41bd1d7e0c2785a4b,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4037666652296452792, guid: 8d82de8364d5d4f41bd1d7e0c2785a4b,
         type: 3}
@@ -4043,6 +4053,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Character - [Melory]
       objectReference: {fileID: 0}
+    - target: {fileID: 2319997595797385841, guid: 34179dacab2ce15488d54f1ba5dcab1e,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2465564339491491371, guid: 34179dacab2ce15488d54f1ba5dcab1e,
         type: 3}
       propertyPath: m_Pivot.x
@@ -4121,7 +4136,7 @@ PrefabInstance:
     - target: {fileID: 2465564339491491371, guid: 34179dacab2ce15488d54f1ba5dcab1e,
         type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 277
+      value: -318.15
       objectReference: {fileID: 0}
     - target: {fileID: 2465564339491491371, guid: 34179dacab2ce15488d54f1ba5dcab1e,
         type: 3}
@@ -4142,6 +4157,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3274109303387894504, guid: 34179dacab2ce15488d54f1ba5dcab1e,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -1.9067535
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4166,6 +4186,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Character - [Generic]
+      objectReference: {fileID: 0}
+    - target: {fileID: 5488144564079202513, guid: adef569bee20a1743a05eea0a98443fa,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7218518205985272506, guid: adef569bee20a1743a05eea0a98443fa,
         type: 3}
@@ -4267,6 +4292,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8397679887755956032, guid: adef569bee20a1743a05eea0a98443fa,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -1.9067535
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4290,6 +4320,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Character - [Livia]
+      objectReference: {fileID: 0}
+    - target: {fileID: 1619018889851115972, guid: dadb4b37140c8ce428caba2b0f9d2e56,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6609453526302446389, guid: dadb4b37140c8ce428caba2b0f9d2e56,
         type: 3}
@@ -4521,6 +4556,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Character - [Raelin]
       objectReference: {fileID: 0}
+    - target: {fileID: 974389121717407313, guid: 6ce7be681f1e4fe4a9b46b9ded5d0cd6,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4645,6 +4685,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: Character - [Sheina]
       objectReference: {fileID: 0}
+    - target: {fileID: 9090980484623076281, guid: 8ca196d1175cceb4793f4c1c81820b13,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -4762,6 +4807,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Character - [Karina]
+      objectReference: {fileID: 0}
+    - target: {fileID: 7064114295502830806, guid: d4a8804d35624f94abc97a9e6b085c45,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
