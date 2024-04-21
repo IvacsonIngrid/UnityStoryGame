@@ -1,12 +1,7 @@
-Elena "This is line 1"
-"This is line 2 from Elena"
-"This is line 3 from Elena"
+CreateCharacter(Melory 1 -e true -i true), CreateCharacter(Karina -e true -i true), CreateCharacter("Guard as Generic" -e true -i true)
 
-narrator "Narrator is speaking now"
-"Narrator is also speaking"
+wait(1)
 
-John "John 1"
-"John 2"
-
-Elena "Elena 1"
-"Elena 2"
+Melory.Unhighlight(-i true), Karina.Unhighlight(-i true)
+wait(5)
+Melory.Highlight(-i true), Karina.Highlight(-i true)

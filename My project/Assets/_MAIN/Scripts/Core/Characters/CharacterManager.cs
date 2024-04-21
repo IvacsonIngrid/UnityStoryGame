@@ -1,6 +1,7 @@
 using DIALOGUE;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ namespace CHARACTERS
     public class CharacterManager : MonoBehaviour
     {
         public static CharacterManager instance { get; private set; }
+        
+        public Character[] allCharacters => characters.Values.ToArray();
         private Dictionary<string, Character> characters = new Dictionary<string, Character>();
 
         private CharacterConfigSO config => DialogueSystem.instance.config.characterConfigAsset;
@@ -43,7 +46,9 @@ namespace CHARACTERS
             return null;
         }
 
-        public Character CreateCharacter(string characterName)
+        public bool HasCharacter(string characterName) => characters.ContainsKey(characterName.ToLower());
+
+        public Character CreateCharacter(string characterName, bool revealAfterCreation = false)
         {
             if (characters.ContainsKey(characterName.ToLower()))
             {
@@ -56,6 +61,9 @@ namespace CHARACTERS
             Character character = CreateCharacterFromInfo(info);
 
             characters.Add(characterName.ToLower(), character);
+
+            if (revealAfterCreation)
+                character.Show();
 
             return character;
         }
@@ -72,6 +80,9 @@ namespace CHARACTERS
             result.config = config.GetConfig(result.castingName);
 
             result.prefab = GetPrefabForCharacter(result.castingName);
+
+            //result.rootCharacterFolder = FormatCharacterPath(characterRootPathFormat, characterName);
+            result.rootCharacterFolder = FormatCharacterPath(characterRootPathFormat, result.castingName);
 
             return result;
         }
@@ -94,13 +105,61 @@ namespace CHARACTERS
                     return new Character_Text(info.name, config);
                 case Character.CharacterType.Sprite:
                 case Character.CharacterType.SpriteSheet:
-                    return new Character_Sprite(info.name, config, info.prefab);
+                    return new Character_Sprite(info.name, config, info.prefab, info.rootCharacterFolder);
                 case Character.CharacterType.Live2D:
-                    return new Character_Live2D(info.name, config, info.prefab);
+                    return new Character_Live2D(info.name, config, info.prefab, info.rootCharacterFolder);
                 case Character.CharacterType.Model3D:
-                    return new Character_Model3D(info.name, config, info.prefab);
+                    return new Character_Model3D(info.name, config, info.prefab, info.rootCharacterFolder);
                 default:
                     return null;
+            }
+        }
+
+        public void SortCharacters()
+        {
+            List<Character> activeCharacters = characters.Values.Where(c => c.root.gameObject.activeInHierarchy && c.isVisible).ToList();
+            List<Character> inactiveCharacters = characters.Values.Except(activeCharacters).ToList();
+
+            activeCharacters.Sort((a, b) => a.priority.CompareTo(b.priority));
+            activeCharacters.Concat(inactiveCharacters);
+
+            SortCharacters(activeCharacters);
+        }
+
+        public void SortCharacters(string[] characterNames)
+        {
+            List<Character> sortedCharacters = new List<Character>();
+
+            sortedCharacters = characterNames
+                .Select(name => GetCharacter(name))
+                .Where(character => character != null)
+                .ToList();
+
+            List<Character> remainingCharacters = characters.Values
+                .Except(sortedCharacters)
+                .OrderBy(character => character.priority)
+                .ToList();
+
+            sortedCharacters.Reverse();
+
+            int startingPriority = remainingCharacters.Count > 0 ? remainingCharacters.Max(c => c.priority) : 0;
+            for(int i = 0; i < sortedCharacters.Count; i++)
+            {
+                Character character = sortedCharacters[i];
+                character.SetPriority(startingPriority + i + 1, autoSortCharactersOnUI: false);
+            }
+
+            List<Character> allCharacters = remainingCharacters.Concat(sortedCharacters).ToList();
+            SortCharacters(allCharacters);
+        }
+
+        private void SortCharacters(List<Character> charactersSortingOrder)
+        {
+            int i = 0;
+            foreach(Character character in charactersSortingOrder)
+            {
+                Debug.Log($"{character.name} priority is {character.priority}");
+                character.root.SetSiblingIndex(i++);
             }
         }
 
@@ -108,6 +167,8 @@ namespace CHARACTERS
         {
             public string name = "";
             public string castingName = "";
+
+            public string rootCharacterFolder;
 
             public CharacterConfigData config = null;
 

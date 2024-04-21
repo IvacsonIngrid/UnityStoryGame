@@ -1,6 +1,8 @@
+using CHARACTERS;
 using COMMANDS;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace DIALOGUE
@@ -61,21 +63,48 @@ namespace DIALOGUE
                     yield return Line_RunCommands(line);
 
                 if (line.hasDialogue)
+                {
                     //wait for user input
                     yield return WaitForUserInput();
+                    CommandManager.instance.StopAllProcesses();
+                }
             }
         }
 
         IEnumerator Line_RunDialogue(DIALOGUE_LINE line)
         {
-            //the speaker's name
-            if (line.hasSpeaker)
-                dialogueSystem.ShowSpeakerName(line.speakerData.displayname);
-            //else
-                //dialogueSystem.HideSpeakerName();
+            //the speaker
+            if (line.hasDialogue)
+                HandleSpeakerLogic(line.speakerData);
 
             //build dialogue
             yield return BuildLineSegments(line.dialogueData);
+        }
+
+        private void HandleSpeakerLogic(DL_SPEAKER_DATA speakerData)
+        {
+            bool characterMustBeCreated = (speakerData.makeCharacterEnter || speakerData.isCastingPosition || speakerData.isCastingExpressions);
+
+            Character character = CharacterManager.instance.GetCharacter(speakerData.name, createIfDoesNotExist: characterMustBeCreated);
+
+            if (speakerData.makeCharacterEnter && (!character.isVisible && !character.isRevealing))
+                character.Show();
+
+            //the name
+            dialogueSystem.ShowSpeakerName(speakerData.displayname);
+
+            //the type od dialogue of character
+            DialogueSystem.instance.ApplySpeakerDataToDialogueContainer(speakerData.name);
+
+            if (speakerData.isCastingPosition)
+                character.MoveToPosition(speakerData.castPosition);
+
+            //Expressions
+            if(speakerData.isCastingExpressions)
+            {
+                foreach (var exp in speakerData.CastExpressions)
+                    character.OnReceiveCastingExpression(exp.layer, exp.expression);
+            }
         }
 
         IEnumerator Line_RunCommands(DIALOGUE_LINE line)
@@ -84,8 +113,19 @@ namespace DIALOGUE
 
             foreach(DL_COMMAND_DATA.Command command in commands)
             {
-                if (command.waitForCompletion)
-                    yield return CommandManager.instance.Execute(command.name, command.arguments);
+                if (command.waitForCompletion || command.name == "wait")
+                {
+                    CoroutineWrapper cw = CommandManager.instance.Execute(command.name, command.arguments);
+                    while(!cw.IsDone)
+                    {
+                        if (userPrompt)
+                        {
+                            CommandManager.instance.StopCurrentProcess();
+                            userPrompt = false;
+                        }
+                        yield return null;
+                    }
+                }
                 else
                     CommandManager.instance.Execute(command.name, command.arguments);
             }

@@ -3,28 +3,52 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using System.Diagnostics.CodeAnalysis;
+using Unity.IO.LowLevel.Unsafe;
+using System.IO;
 
 namespace CHARACTERS
 {
     public abstract class Character
     {
+        public const bool ENABLE_ON_START = true;
+        private const float UNHIGHLIGHTED_DARKEN_STRENGTH = 0.65f;
+        public const bool DEFAULT_ORIENTATION_IS_FACING_LEFT = true;
+        public const string ANIMATION_REFRESH_TRIGGER = "Refresh";
+
         public string name = "";
         public string displayName = "";
         public RectTransform root = null;
         public CharacterConfigData config;
         public Animator animator;
+        public Color color { get; protected set; } = Color.white;
+        protected Color displayColor => highlighted ? highlightedColor : unhighlightedColor;
+        protected Color highlightedColor => color;
+        protected Color unhighlightedColor => new Color(color.r * UNHIGHLIGHTED_DARKEN_STRENGTH, color.g * UNHIGHLIGHTED_DARKEN_STRENGTH, color.b * UNHIGHLIGHTED_DARKEN_STRENGTH, color.a);
+        public bool highlighted { get; protected set; } = true;
+        protected bool facingLeft = DEFAULT_ORIENTATION_IS_FACING_LEFT;
 
-        protected CharacterManager manager => CharacterManager.instance;
+        public int priority { get; protected set; }
+        protected CharacterManager charecterManager => CharacterManager.instance;
 
         public DialogueSystem dialogueSystem => DialogueSystem.instance;
 
         //Coroutine
         protected Coroutine co_revealing, co_hiding;
         protected Coroutine co_moving;
+        protected Coroutine co_changingColor;
+        protected Coroutine co_highlighting;
+        protected Coroutine co_flipping;
         public bool isRevealing => co_revealing != null;
         public bool isHiding => co_hiding != null;
         public bool isMoving => co_moving != null;
-        public virtual bool isVisible => false;
+        public bool isChangingColor => co_changingColor != null;
+        public bool isHighlighting => (highlighted && co_highlighting != null);
+        public bool isUnHighlighting => (!highlighted && co_highlighting != null);
+        public virtual bool isVisible { get; set; }
+        public bool isFacingLeft => facingLeft;
+        public bool isFacingRight => !facingLeft;
+        public bool isFlipping => co_flipping != null;
 
         public Character(string name, CharacterConfigData config, GameObject prefab)
         {
@@ -34,13 +58,14 @@ namespace CHARACTERS
 
             if (prefab != null)
             {
-                GameObject ob = Object.Instantiate(prefab, manager.characterPanel);
+                GameObject ob = Object.Instantiate(prefab, charecterManager.characterPanel);
 
-                ob.name = manager.FormatCharacterPath(manager.characterPrefabNameFormat, name);
+                ob.name = charecterManager.FormatCharacterPath(charecterManager.characterPrefabNameFormat, name);
 
                 ob.SetActive(true);
                 root = ob.GetComponent<RectTransform>();
                 animator = root.GetComponentInChildren<Animator>();
+                Debug.Log($"Animator: {animator.name}");
             }
         }
 
@@ -69,9 +94,9 @@ namespace CHARACTERS
                 return co_revealing;
 
             if (isHiding)
-                manager.StopCoroutine(co_hiding);
+                charecterManager.StopCoroutine(co_hiding);
 
-            co_revealing = manager.StartCoroutine(ShowingOrHiding(true));
+            co_revealing = charecterManager.StartCoroutine(ShowingOrHiding(true));
 
             return co_revealing;
         }
@@ -82,9 +107,9 @@ namespace CHARACTERS
                 return co_hiding;
 
             if (isRevealing)
-                manager.StopCoroutine(co_revealing);
+                charecterManager.StopCoroutine(co_revealing);
 
-            co_hiding = manager.StartCoroutine(ShowingOrHiding(false));
+            co_hiding = charecterManager.StartCoroutine(ShowingOrHiding(false));
 
             return co_hiding;
         }
@@ -112,9 +137,9 @@ namespace CHARACTERS
                 return null; 
             
             if (isMoving)
-                manager.StopCoroutine(co_moving);
+                charecterManager.StopCoroutine(co_moving);
 
-            co_moving = manager.StartCoroutine(MovingToPosition(position, speed, smooth));
+            co_moving = charecterManager.StartCoroutine(MovingToPosition(position, speed, smooth));
 
             return co_moving;
         }
@@ -157,6 +182,129 @@ namespace CHARACTERS
             Vector2 maxAnchorTarget = minAnchorTarget + padding;
 
             return (minAnchorTarget, maxAnchorTarget);
+        }
+
+        public virtual void SetColor(Color color)
+        {
+            this.color = color;
+        }
+
+        public Coroutine TransitionColor(Color color, float speed = 1f)
+        {
+            this.color = color;
+
+            if (isChangingColor)
+                charecterManager.StopCoroutine(co_changingColor);
+
+            co_changingColor = charecterManager.StartCoroutine(ChangingColor(speed));
+
+            return co_changingColor;
+        }
+
+        public virtual IEnumerator ChangingColor(float speed)
+        {
+            Debug.Log($"Color changing is not applicable on this character type.");
+            yield return null;
+        }
+
+        public Coroutine Highlight(float speed = 1f, bool immediate = false)
+        {
+            if (isHighlighting)
+                return co_highlighting;
+
+            if (isUnHighlighting)
+                charecterManager.StopCoroutine(co_highlighting);
+
+            highlighted = true;
+            co_highlighting = charecterManager.StartCoroutine(Highlighting(speed, immediate));
+
+            return co_highlighting;
+        }
+
+        public Coroutine UnHighlight(float speed = 1f, bool immediate = false)
+        {
+            if (isUnHighlighting)
+                return co_highlighting;
+
+            if (isHighlighting)
+                charecterManager.StopCoroutine(co_highlighting);
+
+            highlighted = false;
+            co_highlighting = charecterManager.StartCoroutine(Highlighting(speed, immediate));
+
+            return co_highlighting;
+        }
+
+        public virtual IEnumerator Highlighting(float speedMultiplier, bool immediate = false )
+        {
+            Debug.Log("Highlighting is not available on this character type!");
+            yield return null;
+        }
+
+        public Coroutine Flip(float speed = 1, bool immediate = false)
+        {
+            if (isFacingLeft)
+                return FaceRight(speed, immediate);
+            else
+                return FaceLeft(speed, immediate);
+        }
+
+        public Coroutine FaceLeft(float speed = 1, bool immediate = false)
+        {
+            if (isFlipping)
+                charecterManager.StopCoroutine(co_flipping);
+
+            facingLeft = true;
+            co_flipping = charecterManager.StartCoroutine(FaceDirection(facingLeft, speed, immediate));
+
+            return co_flipping;
+        }
+
+        public Coroutine FaceRight(float speed = 1, bool immediate = false)
+        {
+            if (isFlipping)
+                charecterManager.StopCoroutine(co_flipping);
+
+            facingLeft = false;
+            co_flipping = charecterManager.StartCoroutine(FaceDirection(facingLeft, speed, immediate));
+
+            return co_flipping;
+        }
+
+        public virtual IEnumerator FaceDirection(bool faceleft, float speedMultiplier, bool immediate)
+        {
+            Debug.Log("Cannot flip a character of this type.");
+            yield return null;
+        }
+
+        public void SetPriority(int priority, bool autoSortCharactersOnUI = true)
+        {
+            this.priority = priority;
+
+            if (autoSortCharactersOnUI)
+                charecterManager.SortCharacters();
+        }
+
+        public void Animate(string animation)
+        {
+            animator.SetTrigger(animation);
+        }
+
+        public void Animate(string animation, bool state)
+        {
+            animator.SetBool(animation, state);
+            animator.SetTrigger(ANIMATION_REFRESH_TRIGGER);
+
+        }
+
+        public virtual void OnSort(int sortIndex)
+        {
+            return;
+        }
+
+        public virtual void OnReceiveCastingExpression(int layer, string expression)
+        {
+            return;
         }
 
         public enum CharacterType
