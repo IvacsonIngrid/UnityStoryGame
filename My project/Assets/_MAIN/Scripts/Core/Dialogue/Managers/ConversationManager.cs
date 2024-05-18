@@ -1,5 +1,6 @@
 using CHARACTERS;
 using COMMANDS;
+using DIALOGUE.LogicalLines;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -13,12 +14,19 @@ namespace DIALOGUE
         private Coroutine process = null;
         public bool isRunning => process != null;
 
-        private TextArchitect architect = null;
+        public TextArchitect architect = null;
         private bool userPrompt = false;
+
+        private TagManager tagManager;
+
+        private LogicalLineManager logicalLineManager;
         public ConversationManager(TextArchitect architect)
         {
             this.architect = architect;
             dialogueSystem.onUserPrompt_Next += OnUserPrompt_Next;
+
+            tagManager = new TagManager();
+            logicalLineManager = new LogicalLineManager();
         }
 
         private void OnUserPrompt_Next()
@@ -54,19 +62,27 @@ namespace DIALOGUE
 
                 DIALOGUE_LINE line = DialogueParser.Parse(conversation[i]);
 
-                //dialogus megmutatasa
-                if (line.hasDialogue)
-                    yield return Line_RunDialogue(line);
-
-                //command futtatasa
-                if (line.hasCommands)
-                    yield return Line_RunCommands(line);
-
-                if (line.hasDialogue)
+                if (logicalLineManager.TryGetLogic(line, out Coroutine logic))
                 {
-                    //wait for user input
-                    yield return WaitForUserInput();
-                    CommandManager.instance.StopAllProcesses();
+                    yield return logic;
+                }
+                else
+                {
+                    //dialogus megmuatatasa
+                    if (line.hasDialogue)
+                        yield return Line_RunDialogue(line);
+
+                    //run commands
+                    if (line.hasCommands)
+                        yield return Line_RunCommands(line);
+
+                    //wait for user input if we had dialogue line
+                    if (line.hasDialogue)
+                    {
+                        //wait for user input
+                        yield return WaitForUserInput();
+                        CommandManager.instance.StopAllProcesses();
+                    }
                 }
             }
         }
@@ -74,8 +90,15 @@ namespace DIALOGUE
         IEnumerator Line_RunDialogue(DIALOGUE_LINE line)
         {
             //the speaker
-            if (line.hasDialogue)
+            /*if (line.hasDialogue)
+                HandleSpeakerLogic(line.speakerData);*/
+
+            //the speaker
+            if (line.hasSpeaker)
                 HandleSpeakerLogic(line.speakerData);
+
+            if (!dialogueSystem.dialogueContainer.isVisible)
+                dialogueSystem.dialogueContainer.Show();
 
             //build dialogue
             yield return BuildLineSegments(line.dialogueData);
@@ -91,7 +114,7 @@ namespace DIALOGUE
                 character.Show();
 
             //the name
-            dialogueSystem.ShowSpeakerName(speakerData.displayname);
+            dialogueSystem.ShowSpeakerName(tagManager.Inject(speakerData.displayname));
 
             //the type od dialogue of character
             DialogueSystem.instance.ApplySpeakerDataToDialogueContainer(speakerData.name);
@@ -145,6 +168,8 @@ namespace DIALOGUE
             }
         }
 
+        public bool isWaitingOnAutoTimer { get; private set; } = false;
+
         IEnumerator WaitForDialogueSegmentSignalToBeTriggered(DL_DIALOGUE_DATA.DIALOGUE_SEGMENT segment)
         {
             switch(segment.startSignal)
@@ -155,7 +180,9 @@ namespace DIALOGUE
                     break;
                 case DL_DIALOGUE_DATA.DIALOGUE_SEGMENT.StartSignal.WC:
                 case DL_DIALOGUE_DATA.DIALOGUE_SEGMENT.StartSignal.WA:
+                    isWaitingOnAutoTimer = true;
                     yield return new WaitForSeconds(segment.signalDelay);
+                    isWaitingOnAutoTimer = false;
                     break;
                 default:
                     break;
@@ -164,6 +191,8 @@ namespace DIALOGUE
 
         IEnumerator BuildDialogue(string dialogue, bool append = false)
         {
+            dialogue = tagManager.Inject(dialogue);
+
             //build the dialogue
             if (!append)
                 architect.Build(dialogue);
@@ -189,8 +218,12 @@ namespace DIALOGUE
 
         IEnumerator WaitForUserInput()
         {
+            dialogueSystem.prompt.Show();
+
             while (!userPrompt)
                 yield return null;
+
+            dialogueSystem.prompt.Hide();
 
             userPrompt = false;
         }

@@ -9,10 +9,11 @@ namespace DIALOGUE
     {
         public List<DIALOGUE_SEGMENT> segments;
         private const string segmentIdentifierPattern = @"\{[ca]\}|\{w[ca]\s\d*\.?\d*\}";
-
+        public string rawData { get; private set; } = string.Empty;
         //public bool hasDialogue => segments.Count > 0;
         public DL_DIALOGUE_DATA(string rawDialogue)
         {
+            this.rawData = rawDialogue;
             segments = RipSegments(rawDialogue);
         }
 

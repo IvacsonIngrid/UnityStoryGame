@@ -20,6 +20,9 @@ namespace CHARACTERS
         public TMP_FontAsset nameFont;
         public TMP_FontAsset dialogueFont;
 
+        public float nameFontSize;
+        public float dialogueFontSize;
+
         public CharacterConfigData Copy()
         {
             CharacterConfigData result = new CharacterConfigData();
@@ -32,7 +35,9 @@ namespace CHARACTERS
 
             result.nameColor = new Color(nameColor.r, nameColor.g, nameColor.b, nameColor.a);
             result.dialogueColor = new Color(dialogueColor.r, dialogueColor.g, dialogueColor.b, dialogueColor.a);
-            Debug.Log(result.dialogueColor);
+
+            result.dialogueFontSize = dialogueFontSize;
+            result.nameFontSize = nameFontSize;
 
             return result;
         }
@@ -53,6 +58,9 @@ namespace CHARACTERS
                 result.dialogueFont = defaultFont;
                 result.nameColor = new Color(defaultColor.r, defaultColor.g, defaultColor.b, defaultColor.a);
                 result.dialogueColor = new Color(defaultColor.r, defaultColor.g, defaultColor.b, defaultColor.a);
+
+                result.dialogueFontSize = DialogueSystem.instance.config.defaultDialogueFontSize;
+                result.nameFontSize = DialogueSystem.instance.config.defaultNameFontSize;
 
                 return result;
             }

@@ -8,7 +8,7 @@ namespace DIALOGUE
     public class DL_SPEAKER_DATA
     {
         public string name, castName;
-
+        public string rawData { get; private set; } = string.Empty;
         //public string displayname => castName != string.Empty ? castName : name;
         public string displayname => isCastingName ? castName : name;
         public Vector2 castPosition;
@@ -40,6 +40,7 @@ namespace DIALOGUE
 
         public DL_SPEAKER_DATA(string rawSpeaker)
         {
+            rawData = rawSpeaker;
             rawSpeaker = ProcessKeywords(rawSpeaker);
             
             string pattern = @$"{NAMECAST_ID}|{POSITIONCAST_ID}|{EXPRESSIONCAST_ID.Insert(EXPRESSIONCAST_ID.Length - 1, @"\")}";
