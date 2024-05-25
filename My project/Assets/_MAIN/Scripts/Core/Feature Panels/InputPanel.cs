@@ -6,15 +6,15 @@ using UnityEngine.UI;
 
 public class InputPanel : MonoBehaviour
 {
+    public static InputPanel instance { get; private set; } = null;
+    
     [SerializeField] private CanvasGroup canvas;
     [SerializeField] private TMP_Text titleText;
     [SerializeField] private Button playButton;
     [SerializeField] private TMP_InputField inputField;
 
-    public static InputPanel instance { get; private set; } = null;
-
     private CanvasGroupController controller;
-    public string lastInput { get; private set; }
+    public string lastInput { get; private set; } = string.Empty;
     public bool isWaitingOnUserInput { get; private set; }
 
     private void Awake()
@@ -25,9 +25,10 @@ public class InputPanel : MonoBehaviour
     {
         controller = new CanvasGroupController(this, canvas);
 
-        canvas.alpha = 0;
-        SetCanvasState(active: false);
+        controller.alpha = 0;
+        controller.SetInteractableState(active: false);
         playButton.gameObject.SetActive(false);
+
         inputField.onValueChanged.AddListener(OnInputChanged);
         playButton.onClick.AddListener(OnAcceptInput);
     }
@@ -37,14 +38,14 @@ public class InputPanel : MonoBehaviour
         titleText.text = title;
         inputField.text = string.Empty;
         controller.Show();
-        SetCanvasState(active: true);
+        controller.SetInteractableState(active: true);
         isWaitingOnUserInput = true;
     }
 
     public void Hide()
     {
         controller.Hide();
-        SetCanvasState(active: false);
+        controller.SetInteractableState(active: false);
         isWaitingOnUserInput= false;
     }
 
@@ -55,12 +56,6 @@ public class InputPanel : MonoBehaviour
 
         lastInput = inputField.text;
         Hide();
-    }
-
-    private void SetCanvasState(bool active)
-    {
-        canvas.interactable = active;
-        canvas.blocksRaycasts = active;
     }
 
     public void OnInputChanged(string value)

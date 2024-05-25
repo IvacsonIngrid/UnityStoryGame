@@ -1,78 +1,19 @@
-﻿narrator "What is your name?"
+﻿narratot "Let's test some choices"
+choice "Where do you go?"
+{
+	-The forest
+		$choice = Forest
+	-The Cave
+		$choice = Cave
+}
 
-input "What is your Name?"
+if ($choice == Cave)
+{
+	narrator "To the cave we go!"
+}
+else
+{
+	narrator "To the forest we go!"
+}
 
-narrator "Nice to meet you, <input>!"
-
-
-PlayAmbience(RainyMood), PlaySong(Calm)
-SetLayerMedia(background villagenight)
-CreateCharacter(Melory), CreateCharacter(Karina)
-Melory.Show(), Karina.Show()
-
-Melory [melory_angry] "Finally here!"
-
-Melory [melory_shy] "Hey, Karina - you think this place has an inn?"
-
-Melory [melory_thinking] "Halooo, what do you think?!"
-
-Karina.SetSprite(karina_angry -l 0 -spd 1)
-
-wait(30)
-
-
-
-
-
-
-PlayAmbience(RainyMood)
-
-PlayVoice(wakeup)
-enter Melory "Yes, it worked!"
-
-StopSong()
-StopAmbience()
-
-SetLayerMedia(background Nebula), SetLayerMedia(background 1 SpaceshipInterior)
-
-CreateCharacter(Melory -e true -i true)
-
-Melory "Welcome to the Space!"
-wait(2)
-ClearLayerMedia(background -blend hypno)
-
-Melory "Did we clear the background?"
-
-SetLayerMedia(cinematic -m "~/Graphics/Gallery/flower")
-
-Melory "Wow! It's look beautiful - cinematic layer - !"
-
-ClearLayerMedia(cinematic -i true)
-Melory "The cinematic layer should be clear!"
-
-
-
-CreateCharacter(Melory 1 -e true -i true), CreateCharacter(Karina -e true -i true), CreateCharacter("Guard as Generic" -e true -i true)
-
-wait(1)
-
-Melory.Unhighlight(-i true), Karina.Unhighlight(-i true)
-wait(5)
-Melory.Highlight(-i true), Karina.Highlight(-i true)
-
-Hide(Melory Guard Karina -spd 0.1)
-Melory "Now we are invisible"
-
-Show(Melory Guard Karina -spd 0.1)
-
-Melory "Thank you for joining me!"
-
-MoveCharacter(Guard 0 -spd 0.1), MoveCharacter(Karina 0.1 -spd 0.1), Hide(Melory)
-
-Guard "Where did she go?"
-
-Karina "I don't know!"
-
-Guard "Did we miss her?"
-
-Karina "I sad, I don't know."
+narrator "What are we waiting for, let's go to the $choice"

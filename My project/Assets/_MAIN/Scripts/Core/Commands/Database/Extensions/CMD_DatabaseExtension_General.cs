@@ -10,6 +10,8 @@ namespace COMMANDS
     {
         private static string[] PARAM_IMMEDIATE => new string[] { "-i", "-immediate" };
         private static string[] PARAM_SPEED => new string[] { "-spd", "-speed" };
+        private static string[] PARAM_FILEPATH => new string[] { "-f", "-file", "-filepath" };
+        private static string[] PARAM_ENQUEUE => new string[] { "-e", "-enqueue" };
 
         new public static void Extend(CommandDatabase database)
         {
@@ -20,6 +22,36 @@ namespace COMMANDS
 
             database.AddCommand("showui", new Func<string[], IEnumerator>(ShowDialogueSystem));
             database.AddCommand("hideui", new Func<string[], IEnumerator>(HideDialogueSystem));
+
+            database.AddCommand("loadfile", new Action<string[]>(LoadNewDialogueFile));
+        }
+
+        private static void LoadNewDialogueFile(string[] data)
+        {
+            string textFile = string.Empty;
+            bool enqueue = false;
+
+            var parameters = ConvertDataToParameters(data);
+
+            parameters.TryGetValue(PARAM_FILEPATH, out textFile);
+            parameters.TryGetValue(PARAM_ENQUEUE, out enqueue, defaultValue: false);
+
+            string filePath = FilePaths.GetPathToResource(FilePaths.resource_dialogueFile, textFile);
+            TextAsset file = Resources.Load<TextAsset>(filePath);
+
+            if (file == null)
+            {
+                Debug.LogError($"File '{filePath}' could not be loaded.");
+                return;
+            }
+
+            List<string> lines = FileManager.ReadTextAsset(file, includeBlankLines: true);
+            Conversation newConversation = new Conversation(lines);
+
+            if (enqueue)
+                DialogueSystem.instance.conversationManager.Enqueue(newConversation);
+            else
+                DialogueSystem.instance.conversationManager.StartConversation(newConversation);
         }
 
         private static IEnumerator Wait(string data)

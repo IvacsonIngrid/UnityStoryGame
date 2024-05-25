@@ -1,0 +1,8 @@
+wait(3)
+PlaySong("Happy")
+SetLayerMedia(background 1 "~/Graphics/MyBackground/alaplap1")
+
+CreateCharacter(Narrator -e true -i true)
+Narrator.SetPosition(1)
+enter Narrator "Üdvözöllek a Szférában, ahol a sellők és a sárkányok együtt élnek az emberekkel!{wc 1.5}Kalandjátékunk tele van történelmi titkokkal, múltbéli sérelmekkel, politikai harcokkal.{wc 1.5}A játék kezdetén lehetőséged van eldönteni, kinek a szemén át szeretnéd megismerni ezt a világot.{wa 1.5} Ahhoz, hogy könnyebben tudj dönteni, ismerd meg a főhőseinket: Melory, Demian, Karina."
+wait(2.5)

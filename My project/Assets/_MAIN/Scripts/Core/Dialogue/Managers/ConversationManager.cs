@@ -15,30 +15,40 @@ namespace DIALOGUE
         public bool isRunning => process != null;
 
         public TextArchitect architect = null;
+
         private bool userPrompt = false;
 
-        private TagManager tagManager;
-
         private LogicalLineManager logicalLineManager;
+        public Conversation conversation => (conversationQueue.IsEmpty() ? null : conversationQueue.top);
+        
+        public int conversationProgress => (conversationQueue.IsEmpty() ? -1 : conversationQueue.top.GetProgress());
+        private ConversationQueue conversationQueue;
         public ConversationManager(TextArchitect architect)
         {
             this.architect = architect;
             dialogueSystem.onUserPrompt_Next += OnUserPrompt_Next;
 
-            tagManager = new TagManager();
             logicalLineManager = new LogicalLineManager();
+            conversationQueue = new ConversationQueue();
         }
+
+        public void Enqueue(Conversation conversation) => conversationQueue.Enqueue(conversation);
+        public void EnqueuePriority(Conversation conversation) => conversationQueue.EnqueuePriority(conversation);
 
         private void OnUserPrompt_Next()
         {
             userPrompt = true;
         }
         
-        public Coroutine StartConversation(List<string> conversation)
+        public Coroutine StartConversation(Conversation conversation)
         {
             StopConversation();
 
-            process = dialogueSystem.StartCoroutine(RunningConversation(conversation));
+            conversationQueue.Clear();
+
+            Enqueue(conversation);
+
+            process = dialogueSystem.StartCoroutine(RunningConversation());
 
             return process;
         }
@@ -52,15 +62,28 @@ namespace DIALOGUE
             process = null;
         }
 
-        IEnumerator RunningConversation(List<string> conversation)
+        IEnumerator RunningConversation()
         {
-            for (int i = 0; i < conversation.Count; i++)
+            while (!conversationQueue.IsEmpty())
             {
-                //ne legyen szokoz
-                if (string.IsNullOrWhiteSpace(conversation[i]))
-                    continue;
+                Conversation currentConversation = conversation;
 
-                DIALOGUE_LINE line = DialogueParser.Parse(conversation[i]);
+                if (currentConversation.HasReachedEnd())
+                {
+                    conversationQueue.Dequeue();
+                    continue;
+                }
+
+                string rawLine = currentConversation.CurrentLine();
+
+                //ne legyen szokoz
+                if (string.IsNullOrWhiteSpace(rawLine))
+                {
+                    TryAdvanceConversation(currentConversation);
+                    continue;
+                }
+
+                DIALOGUE_LINE line = DialogueParser.Parse(rawLine);
 
                 if (logicalLineManager.TryGetLogic(line, out Coroutine logic))
                 {
@@ -84,7 +107,22 @@ namespace DIALOGUE
                         CommandManager.instance.StopAllProcesses();
                     }
                 }
+
+                TryAdvanceConversation(currentConversation);
             }
+
+            process = null;
+        }
+
+        private void TryAdvanceConversation(Conversation conversation)
+        {
+            conversation.IncrementProgress();
+
+            if (conversation != conversationQueue.top)
+                return;
+
+            if (conversation.HasReachedEnd())
+                conversationQueue.Dequeue();
         }
 
         IEnumerator Line_RunDialogue(DIALOGUE_LINE line)
@@ -114,7 +152,7 @@ namespace DIALOGUE
                 character.Show();
 
             //the name
-            dialogueSystem.ShowSpeakerName(tagManager.Inject(speakerData.displayname));
+            dialogueSystem.ShowSpeakerName(TagManager.Inject(speakerData.displayname));
 
             //the type od dialogue of character
             DialogueSystem.instance.ApplySpeakerDataToDialogueContainer(speakerData.name);
@@ -191,7 +229,7 @@ namespace DIALOGUE
 
         IEnumerator BuildDialogue(string dialogue, bool append = false)
         {
-            dialogue = tagManager.Inject(dialogue);
+            dialogue = TagManager.Inject(dialogue);
 
             //build the dialogue
             if (!append)

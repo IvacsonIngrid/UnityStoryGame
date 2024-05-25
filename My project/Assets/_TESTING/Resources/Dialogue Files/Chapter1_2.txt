@@ -1,0 +1,9 @@
+wait(3)
+PlaySong("Happy")
+SetLayerMedia(background 1 "~/Graphics/MyBackground/alaplap2")
+
+Melory.Show(). Karina.Show(), Karina.SetPosition(0.3), Melory.SetPosition(0)
+wait(1)
+Showdialoguebox(-i true)
+
+Melory "Történelmünk szerint a világ kezdete óta ezt a bolygót három faj birtokolja.{wc 1.5}Vezetőik megállapodtak egymás között, hogy igazságosan megszabják, birodalmaik meddig terjedjenek el, hol legyenek a határok."
