@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using TMPro;
 using Unity.VisualScripting;
@@ -52,7 +52,7 @@ public class TextArchitect
         return buildProcess;
     }
 
-    public Coroutine Append(string text)
+    public Coroutine Append(string text) // meglévő elemhez fűzte
     {
         preText = tmpro.text;
         targetText = text;

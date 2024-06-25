@@ -10,9 +10,12 @@ namespace DIALOGUE.LogicalLines
 {
     public class LogicalLine_Conditions : ILogicalLine
     {
+        // szükséges kulcsszavak
         public string keyword => "if";
         private const string ELSE = "else";
         private readonly string[] CONTAINERS = new string[] { "(", ")" };
+
+        // adatok kinyerése, feldolgozása, 2 részre bontása, logikai állitás kiértékelése
         public IEnumerator Execute(DIALOGUE_LINE line)
         {
             string rawCondition = ExtractCondition(line.rawData.Trim());
@@ -46,11 +49,13 @@ namespace DIALOGUE.LogicalLines
             yield return null;
         }
 
+        // valóban egyezik-e a keresett kulcsszóval?
         public bool Matches(DIALOGUE_LINE line)
         {
             return line.rawData.Trim().StartsWith(keyword);
         }
 
+        // blokkok meghatározása
         private string ExtractCondition(string line)
         {
             int startIndex = line.IndexOf(CONTAINERS[0]) + 1;

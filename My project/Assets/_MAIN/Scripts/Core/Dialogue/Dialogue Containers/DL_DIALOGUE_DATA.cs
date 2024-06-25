@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -23,7 +23,8 @@ namespace DIALOGUE
             MatchCollection matches = Regex.Matches(rawDialogue, segmentIdentifierPattern);
 
             int lastIndex = 0;
-            //find the first or the only segment in the file
+
+            // első szegmens megtalálása
             DIALOGUE_SEGMENT segment = new DIALOGUE_SEGMENT();
             segment.dialogue = matches.Count == 0 ? rawDialogue : rawDialogue.Substring(0, matches[0].Index);
             segment.startSignal = DIALOGUE_SEGMENT.StartSignal.NONE;
@@ -40,18 +41,18 @@ namespace DIALOGUE
                 Match match = matches[i];
                 segment = new DIALOGUE_SEGMENT();
 
-                //get the start signal for the segment
-                string signalMatch = match.Value; //{A}
+                // a kezdési jwl lekérése
+                string signalMatch = match.Value; //{A} - hozzáfűzés
                 signalMatch = signalMatch.Substring(1, match.Length - 2);
                 string[] signalSplit = signalMatch.Split(' ');
 
                 segment.startSignal = (DIALOGUE_SEGMENT.StartSignal)Enum.Parse(typeof(DIALOGUE_SEGMENT.StartSignal), signalSplit[0].ToUpper());
 
-                //get the signal delay
+                // végrehajtás késleltetésének lekérése
                 if (signalSplit.Length > 1)
                     float.TryParse(signalSplit[1], out segment.signalDelay);
 
-                //get the dialogue for the segment
+                //szegmenssé alakitás
                 int nextIndex = i + 1 < matches.Count ? matches[i + 1].Index : rawDialogue.Length;
                 segment.dialogue = rawDialogue.Substring(lastIndex + match.Length, nextIndex - (lastIndex + match.Length));
                 lastIndex = nextIndex;
@@ -62,6 +63,7 @@ namespace DIALOGUE
             return segments;
         }
 
+        // dialogus szegmens szerkezete
         public struct DIALOGUE_SEGMENT
         {
             public string dialogue;

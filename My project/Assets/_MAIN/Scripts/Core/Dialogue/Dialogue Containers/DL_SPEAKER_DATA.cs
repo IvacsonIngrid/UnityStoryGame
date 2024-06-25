@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -7,12 +7,12 @@ namespace DIALOGUE
 {
     public class DL_SPEAKER_DATA
     {
-        public string name, castName;
-        public string rawData { get; private set; } = string.Empty;
+        public string name, castName; // neve a karakternek
+        public string rawData { get; private set; } = string.Empty; // nyers adatok
         //public string displayname => castName != string.Empty ? castName : name;
-        public string displayname => isCastingName ? castName : name;
-        public Vector2 castPosition;
-        public List<(int layer, string expression)> CastExpressions { get; set; }
+        public string displayname => isCastingName ? castName : name; // megjelenitendő név
+        public Vector2 castPosition; // karakter poziciója
+        public List<(int layer, string expression)> CastExpressions { get; set; } // rétegek kezelése kifejezés szempontjából
         public bool isCastingName => castName != string.Empty;
         public bool isCastingPosition = false;
         public bool isCastingExpressions => CastExpressions.Count > 0;
@@ -32,7 +32,7 @@ namespace DIALOGUE
         {
             if (rawSpeaker.StartsWith(ENTER_KEYWORD))
             {
-                rawSpeaker = rawSpeaker.Substring(ENTER_KEYWORD.Length);
+                rawSpeaker = rawSpeaker.Substring(ENTER_KEYWORD.Length); // beszélő megjelenése a képernyőn
                 makeCharacterEnter = true;
             }
             return rawSpeaker;
@@ -40,33 +40,36 @@ namespace DIALOGUE
 
         public DL_SPEAKER_DATA(string rawSpeaker)
         {
+            // obj. létrehozása nyers adatokból
             rawData = rawSpeaker;
-            rawSpeaker = ProcessKeywords(rawSpeaker);
-            
-            string pattern = @$"{NAMECAST_ID}|{POSITIONCAST_ID}|{EXPRESSIONCAST_ID.Insert(EXPRESSIONCAST_ID.Length - 1, @"\")}";
-            MatchCollection matches = Regex.Matches(rawSpeaker, pattern);
+            rawSpeaker = ProcessKeywords(rawSpeaker); // esetleges kulcsszavak feldolgozása
 
-            //populate this data
+            // megtalálja az összes karakter létrehozó cimkét
+            string pattern = @$"{NAMECAST_ID}|{POSITIONCAST_ID}|{EXPRESSIONCAST_ID.Insert(EXPRESSIONCAST_ID.Length - 1, @"\")}";
+            MatchCollection matches = Regex.Matches(rawSpeaker, pattern); // illeszkedő inta keresése
+
             castName = "";
             castPosition = Vector2.zero;
             CastExpressions = new List<(int layer, string expression)>();
 
-            //if there are no matches, then this entire line is the speaker name
+            // teljes rawSpeaker a beszélő neve
             if (matches.Count == 0)
             {
                 name = rawSpeaker;
                 return;
             }
 
-            //otherwise, isolate the speaker name from the casting data
+            // ha nem, akkor kinyeri az adatokat: név, pozició...
             int index = matches[0].Index;
             name = rawSpeaker.Substring(0, index);
 
+            // illeszkedések vizsgálata
             for (int i = 0; i < matches.Count; i++)
             {
                 Match match = matches[i];
                 int startIndex = 0, endIndex = 0;
 
+                // mindegyik lehetséges bevezetőt lekezeli
                 if (match.Value == NAMECAST_ID)
                 {
                     startIndex = match.Index + NAMECAST_ID.Length;

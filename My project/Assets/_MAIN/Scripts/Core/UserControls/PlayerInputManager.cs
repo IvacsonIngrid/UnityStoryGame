@@ -1,3 +1,4 @@
+﻿using History;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,31 +18,39 @@ namespace DIALOGUE
             InitializeActions();
         }
 
-        private void InitializeActions()
+        private void InitializeActions() // akciók inicializálása és hozzárendelése a megfelelő visszahivási metódushoz
         {
             actions.Add((input.actions["Next"], OnNext));
+            actions.Add((input.actions["HistoryBack"], OnHistoryBack));
+            actions.Add((input.actions["HistoryForward"], OnHistoryForward));
         }
 
-        private void OnEnable()
+        private void OnEnable() // feliratkozás az akciók "performed" eseményére
         {
             foreach (var inputAction in actions)
                 inputAction.action.performed += inputAction.command;
         }
 
-        private void OnDisable()
+        private void OnDisable() // leiratkozás az akciók "performed" eseményéről
         {
             foreach (var inputAction in actions)
                 inputAction.action.performed -= inputAction.command;
         }
 
-        public void OnNext(InputAction.CallbackContext c)
+        public void OnNext(InputAction.CallbackContext c) // továbblépteti a párbeszédet
         {
             DialogueSystem.instance.OnUserPrompt_Next();
         }
 
+        public void OnHistoryBack(InputAction.CallbackContext c)
+        {
+            HistoryManager.instance.GoBack();
+        }
 
-
-
+        public void OnHistoryForward(InputAction.CallbackContext c)
+        {
+            HistoryManager.instance.GoForward();
+        }
 
 
         // Update is called once per frame
@@ -55,5 +64,7 @@ namespace DIALOGUE
         {
             DialogueSystem.instance.OnUserPrompt_Next();
         }
+
+        // manuális előreléptetési metódus
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +8,7 @@ namespace COMMANDS
 {
     public class CMD_DatabaseExtension_Audio : CMD_DatabaseExtension
     {
+        // lehetséges paraméterek elődefiniálása
         private static string[] PARAM_SFX = new string[] { "-s", "-sfx"};
         private static string[] PARAM_VOLUME = new string[] { "-v", "-vol", "-volume"};
         private static string[] PARAM_PITCH = new string[] { "-p", "-pitch"};
@@ -18,7 +19,9 @@ namespace COMMANDS
         private static string[] PARAM_START_VOLME = new string[] { "-sv","-startvolume"};
         private static string[] PARAM_SONG = new string[] { "-s", "-song" };
         private static string[] PARAM_AMBIENCE = new string[] { "-a", "-ambience" };
-        new public static void Extend(CommandDatabase database)
+
+        // absztrakt osztály metódusának implementálása - a forgatókönyvben használható parancsok definiálása, a parancshoz tartozó metódus végrehajtása
+        new public static void Extend(CommandDatabase database) // minden a létrehozott adatbázisban tárolva
         {
             database.AddCommand("playsfx", new Action<string[]>(PlaySFX));
             database.AddCommand("stopsfx", new Action<string>(StopSFX));
@@ -41,20 +44,23 @@ namespace COMMANDS
 
             var parameters = ConvertDataToParameters(data);
 
+            // paraméterek lekérése
             parameters.TryGetValue(PARAM_SFX, out filePath);
             parameters.TryGetValue(PARAM_VOLUME, out volume, defaultValue: 1f);
             parameters.TryGetValue(PARAM_PITCH, out pitch, defaultValue: 1f);
             parameters.TryGetValue(PARAM_LOOP, out loop, defaultValue: false);
 
-            //RUN
+            // betölti az AudioClip elemet
             AudioClip sound = Resources.Load<AudioClip>(FilePaths.GetPathToResource(FilePaths.resources_sfx, filePath));
 
             if (sound == null)
                 return;
 
+            // lejátszás végrehajtása
             AudioManager.instance.PlaySoundEffect(sound, volume: volume, pitch: pitch, loop: loop);
         }
 
+        // lejátszás megállitása
         private static void StopSFX(string data)
         {
             AudioManager.instance.StopSoundEffect(data);
@@ -68,12 +74,13 @@ namespace COMMANDS
 
             var parameters = ConvertDataToParameters(data);
 
+            // paraméterek lekérése
             parameters.TryGetValue(PARAM_SFX, out filePath);
             parameters.TryGetValue(PARAM_VOLUME, out volume, defaultValue: 1f);
             parameters.TryGetValue(PARAM_PITCH, out pitch, defaultValue: 1f);
             parameters.TryGetValue(PARAM_LOOP, out loop, defaultValue: false);
 
-            //RUN
+            //AudioClim elem létrehozása a hanghoz
             AudioClip sound = Resources.Load<AudioClip>(FilePaths.GetPathToResource(FilePaths.resources_voices, filePath));
 
             if (sound == null)
@@ -82,6 +89,7 @@ namespace COMMANDS
                 return;
             }
 
+            // lejátszás
             AudioManager.instance.PlayVoice(sound, volume: volume, pitch: pitch, loop: loop);
         }
 
@@ -92,11 +100,13 @@ namespace COMMANDS
 
             var parameters = ConvertDataToParameters(data);
 
+            // paraméter lekérése - útvonal elérése
             parameters.TryGetValue(PARAM_SONG, out filePath);
             filePath = FilePaths.GetPathToResource(FilePaths.resources_music, filePath);
 
             parameters.TryGetValue(PARAM_CHANNEL, out channel, defaultValue: 1);
 
+            // lejátszás kérése
             PlayTrack(filePath, channel, parameters);
         }
 
@@ -107,11 +117,13 @@ namespace COMMANDS
 
             var parameters = ConvertDataToParameters(data);
 
+            // paraméter lekérése - útvonal elérése
             parameters.TryGetValue(PARAM_AMBIENCE, out filePath);
             filePath = FilePaths.GetPathToResource(FilePaths.resources_ambience, filePath);
 
             parameters.TryGetValue(PARAM_CHANNEL, out channel, defaultValue: 0);
 
+            // lejátszás kérése
             PlayTrack(filePath, channel, parameters);
         }
 
@@ -123,12 +135,13 @@ namespace COMMANDS
             float startVolume;
             float pitch;
 
+            // paraméter lekérése
             parameters.TryGetValue(PARAM_VOLUME, out volumeCap, defaultValue: 1f);
             parameters.TryGetValue(PARAM_START_VOLME, out startVolume, defaultValue: 0f);
             parameters.TryGetValue(PARAM_PITCH, out pitch, defaultValue: 1f);
             parameters.TryGetValue(PARAM_LOOP, out loop, defaultValue: true);
 
-            //RUN
+            // AudioClip létrehozása az útvonallal azonositott hanganyaghoz
             AudioClip sound = Resources.Load<AudioClip>(filePath);
 
             if (sound == null)
@@ -137,9 +150,12 @@ namespace COMMANDS
                 return;
             }
 
+            // lejátszás
             AudioManager.instance.PlayTrack(sound, channel, loop, startVolume, volumeCap, pitch, filePath);
         }
 
+
+        // leállitáshoz használt metódusok, aár csatorna leállitás is
         private static void StopSong(string data)
         {
             if (data == string.Empty)

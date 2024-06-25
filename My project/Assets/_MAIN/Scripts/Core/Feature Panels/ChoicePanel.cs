@@ -8,6 +8,7 @@ public class ChoicePanel : MonoBehaviour
 {
     public static ChoicePanel instance {  get; private set; }
 
+    // gomb méreteinek beállitása
     private const float BUTTON_MIN_WIDTH = 50;
     private const float BUTTON_MAX_SIZE = 1000;
     private const float BUTTON_WIDTH_PADDING = 25;
@@ -16,15 +17,15 @@ public class ChoicePanel : MonoBehaviour
     private const float BUTTON_HEIGHT_PADDING = 20f;
 
     [SerializeField] private CanvasGroup canvasGroup;
-    [SerializeField] private TextMeshProUGUI titleText;
+    [SerializeField] private TextMeshProUGUI titleText; // kérdés szövege
     [SerializeField] private GameObject choiceButtonPrefab;
-    [SerializeField] private VerticalLayoutGroup buttonLayoutGroup;
+    [SerializeField] private VerticalLayoutGroup buttonLayoutGroup; // gombok vertikális elrendezése
 
-    private CanvasGroupController controller = null;
-    private List<ChoiceButton> buttons = new List<ChoiceButton>();
+    private CanvasGroupController controller = null; // panel megjelenitéséhez, interaktivitáshoz
+    private List<ChoiceButton> buttons = new List<ChoiceButton>(); // választási gombok
 
-    public ChoicePanelDecision lastDecision { get; private set; } = null;
-    public bool isWaitingOnUserChoice { get; private set; } = false;
+    public ChoicePanelDecision lastDecision { get; private set; } = null; // utolsó választás részletei
+    public bool isWaitingOnUserChoice { get; private set; } = false; // rendszer vár-e felhasználó válaszára
 
     private void Awake()
     {
@@ -38,7 +39,7 @@ public class ChoicePanel : MonoBehaviour
         controller.SetInteractableState(false);
     }
 
-    public void Show(string question, string[] choices)
+    public void Show(string question, string[] choices) // választási panel: kérdések - válaszok megjelenitése
     {
         lastDecision = new ChoicePanelDecision(question, choices);
         isWaitingOnUserChoice = true;
@@ -49,7 +50,7 @@ public class ChoicePanel : MonoBehaviour
         StartCoroutine(GeneratorChoices(choices));
     }
 
-    private IEnumerator GeneratorChoices(string[] choices)
+    private IEnumerator GeneratorChoices(string[] choices) // gombok - választási lehetőségekkel való megadása
     {
         float maxWidth = 0;
 
@@ -105,13 +106,13 @@ public class ChoicePanel : MonoBehaviour
         }
     }
 
-    public void Hide()
+    public void Hide() // választási panel elrejtése
     {
         controller.Hide();
         controller.SetInteractableState(false);
     }
 
-    private void AcceptAnswer(int index)
+    private void AcceptAnswer(int index) // felhasználó válaszának kezelése
     {
         if (index < 0 || index > lastDecision.choices.Length - 1)
             return;
@@ -121,7 +122,7 @@ public class ChoicePanel : MonoBehaviour
         Hide();
     }
 
-    public class ChoicePanelDecision
+    public class ChoicePanelDecision // választás részletei
     {
         public string question = string.Empty;
         public int answerIndex = -1;
@@ -135,7 +136,7 @@ public class ChoicePanel : MonoBehaviour
         }
     }
 
-    private struct ChoiceButton
+    private struct ChoiceButton // választási gomb struktúrája
     {
         public Button button;
         public TextMeshProUGUI title;

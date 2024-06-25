@@ -7,23 +7,24 @@ namespace DIALOGUE
 {
     public class AutoReader : MonoBehaviour
     {
-        private const int DEFAULT_CHARACTERS_READ_PER_SECOND = 18;
+        private const int DEFAULT_CHARACTERS_READ_PER_SECOND = 18; // alapértelmezett olvasási sebesség
         private const float READ_TIME_PADDING = 0.5F;
         private const float MAX_READ_TIME = 99f;
         private const float MIN_READ_TIME = 1f;
         private const string STATUS_TEXT_AUTO = "Auto";
         private const string STATUS_TEXT_SKIPPING = "Skipping";
 
-        private ConversationManager conversationManager;
+        private ConversationManager conversationManager; // párbeszéd kezeléshez
         private TextArchitect architect => conversationManager.architect;
 
-        public bool skip { get; set; } = false;
-        public float speed { get; set; } = 1f;
+        public bool skip { get; set; } = false; // átugorható-e a párbeszéd
+        public float speed { get; set; } = 1f; // automatikus olvasási sebesség
 
-        public bool isOn => co_running != null;
+        public bool isOn => co_running != null; // aut. olvasás fut?
         private Coroutine co_running = null;
 
         [SerializeField] private TextMeshProUGUI statusText;
+        [HideInInspector] public bool allowToggle = true; // auto -skip váltást engedélyez
 
         public void Initialize(ConversationManager conversationManager)
         {
@@ -31,7 +32,7 @@ namespace DIALOGUE
             statusText.text = string.Empty;
         }
 
-        public void Enable()
+        public void Enable() // aut. olvasás engedélyezése
         {
             if (isOn)
                 return;
@@ -39,6 +40,7 @@ namespace DIALOGUE
             co_running = StartCoroutine(AutoRead());
         }
 
+        // automatikus olvasás letiltása
         public void Disable()
         {
             if (!isOn)
@@ -91,8 +93,11 @@ namespace DIALOGUE
             Disable();
         }
 
-        public void Toggle_Auto()
+        public void Toggle_Auto() // váltja az Auto módot
         {
+            if (!allowToggle)
+                return;
+            
             bool prevState = skip;
             skip = false;
 
@@ -106,11 +111,15 @@ namespace DIALOGUE
                     Disable();
             }
 
-            statusText.text = STATUS_TEXT_AUTO;
+            if (isOn)
+                statusText.text = STATUS_TEXT_AUTO;
         }
 
-        public void Toggle_Skip()
+        public void Toggle_Skip() // váltja a Skip módot
         {
+            if (!allowToggle)
+                return;
+            
             bool prevState = skip;
             skip = true;
 
@@ -124,7 +133,8 @@ namespace DIALOGUE
                     Disable();
             }
 
-            statusText.text = STATUS_TEXT_SKIPPING;
+            if (isOn)
+                statusText.text = STATUS_TEXT_SKIPPING;
         }
     }
 }

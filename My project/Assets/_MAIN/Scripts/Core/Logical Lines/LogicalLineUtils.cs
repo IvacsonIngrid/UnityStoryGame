@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace DIALOGUE.LogicalLines
 {
     public static class LogicalLineUtils
     {
-        public static class Encapsulation
+        public static class Encapsulation // beágyazott osztály
         {
             public struct EncapsulatedData
             {
@@ -60,11 +60,11 @@ namespace DIALOGUE.LogicalLines
 
         public static class Expressions
         {
-            public static HashSet<string> OPERATORS = new HashSet<string>() { "-", "+", "*", "/", "-=", "+=", "*=", "/=", "=" };
-            public static readonly string REGEX_ARITHMATIC = @"([-+*/=]=?)";
+            public static HashSet<string> OPERATORS = new HashSet<string>() { "-", "+", "*", "/", "-=", "+=", "*=", "/=", "=" }; // minden létező operátor tárolása
+            public static readonly string REGEX_ARITHMATIC = @"([-+*/=]=?)"; // regex minta aritmetiaki operártorokhoz
             public static readonly string REGEX_OPERATOR_LINE = @"^\$\w+\s*(=|\+=|-=|\*=|/=|)\s*";
 
-            public static object CalculateValue(string[] expressionParts)
+            public static object CalculateValue(string[] expressionParts) // kiszámítja a kifejezés értékét
             {
                 List<string> operandStrings = new List<string>();
                 List<string> operatorStrings = new List<string>();
@@ -94,6 +94,7 @@ namespace DIALOGUE.LogicalLines
                 return operands[0];
             }
 
+            // a szorzást és osztást az operátorok listájával és az operandusok listájával
             private static void CalculateValue_DivisionAndMultiplication(List<string> operatorStrings, List<object> operands)
             {
                 for (int i = 0; i < operatorStrings.Count; i++)
@@ -128,6 +129,7 @@ namespace DIALOGUE.LogicalLines
                 }
             }
 
+            // összeadást és kivonást az operátorok listájával és az operandusok listájával
             private static void CalculateValue_AdditionAndSubtraction(List<string> operatorStrings, List<object> operands)
             {
                 for (int i = 0; i < operatorStrings.Count; i++)
@@ -151,7 +153,7 @@ namespace DIALOGUE.LogicalLines
                 }
             }
 
-            private static object ExtractValue(string value)
+            private static object ExtractValue(string value) // kinyeri az értéket a megadott string értékből
             {
                 bool negate = false;
 
@@ -206,10 +208,10 @@ namespace DIALOGUE.LogicalLines
             }
         }
 
-        public static class Conditions
+        public static class Conditions  // beágyazott osztály
         {
-            public static readonly string REGEX_CONDITIONAL_OPERATORS = @"(==|!=|<=|>=|<|>|&&|\|\|)";
-            public static bool EvaluateCondition (string condition)
+            public static readonly string REGEX_CONDITIONAL_OPERATORS = @"(==|!=|<=|>=|<|>|&&|\|\|)";  // feltételes operátorokhoz
+            public static bool EvaluateCondition (string condition) // adott érték kiértékelése
             {
                 condition = TagManager.Inject(condition, injectTags: true, injectVariables: true);
 

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -13,9 +13,9 @@ public class InputPanel : MonoBehaviour
     [SerializeField] private Button playButton;
     [SerializeField] private TMP_InputField inputField;
 
-    private CanvasGroupController controller;
-    public string lastInput { get; private set; } = string.Empty;
-    public bool isWaitingOnUserInput { get; private set; }
+    private CanvasGroupController controller; // panel megjelenitése és interaktivitása
+    public string lastInput { get; private set; } = string.Empty; // utolsó bevitt szöveg
+    public bool isWaitingOnUserInput { get; private set; } // várja a felh. be kell-e vigyen adatot
 
     private void Awake()
     {
@@ -33,7 +33,7 @@ public class InputPanel : MonoBehaviour
         playButton.onClick.AddListener(OnAcceptInput);
     }
 
-    public void Show(string title)
+    public void Show(string title) // adott cimen input panel megjelenése
     {
         titleText.text = title;
         inputField.text = string.Empty;
@@ -42,14 +42,14 @@ public class InputPanel : MonoBehaviour
         isWaitingOnUserInput = true;
     }
 
-    public void Hide()
+    public void Hide() // elrejti az input panelt
     {
         controller.Hide();
         controller.SetInteractableState(active: false);
         isWaitingOnUserInput= false;
     }
 
-    private void OnAcceptInput()
+    private void OnAcceptInput() // kezeli a szöveg bevitelének elfogadását
     {
         if (inputField.text == string.Empty)
             return;
@@ -58,11 +58,11 @@ public class InputPanel : MonoBehaviour
         Hide();
     }
 
-    public void OnInputChanged(string value)
+    public void OnInputChanged(string value) // kezeli beviteli mező tartalmának változását
     {
         playButton.gameObject.SetActive(HasValidText());
     }
-    private bool HasValidText()
+    private bool HasValidText() // ne legyen üres a beviteli mező
     {
         return inputField.text != string.Empty;
     }

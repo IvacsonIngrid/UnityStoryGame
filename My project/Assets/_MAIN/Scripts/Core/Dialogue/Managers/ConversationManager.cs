@@ -1,4 +1,4 @@
-using CHARACTERS;
+﻿using CHARACTERS;
 using COMMANDS;
 using DIALOGUE.LogicalLines;
 using System.Collections;
@@ -11,18 +11,20 @@ namespace DIALOGUE
     public class ConversationManager
     {
         private DialogueSystem dialogueSystem => DialogueSystem.instance;   
-        private Coroutine process = null;
-        public bool isRunning => process != null;
+        private Coroutine process = null; // akt. párbeszéd kezelésére
+        public bool isRunning => process != null; // jelenleg fut-e párbeszéd
 
-        public TextArchitect architect = null;
+        public TextArchitect architect = null; // párbeszéd szövegének megjelenitéséért
 
-        private bool userPrompt = false;
+        private bool userPrompt = false; // felhasználói bemenetet jelez
 
         private LogicalLineManager logicalLineManager;
-        public Conversation conversation => (conversationQueue.IsEmpty() ? null : conversationQueue.top);
-        
-        public int conversationProgress => (conversationQueue.IsEmpty() ? -1 : conversationQueue.top.GetProgress());
-        private ConversationQueue conversationQueue;
+        public Conversation conversation => (conversationQueue.IsEmpty() ? null : conversationQueue.top); // jelenlegi párbeszéd
+
+        public int conversationProgress => (conversationQueue.IsEmpty() ? -1 : conversationQueue.top.GetProgress()); // akt. párbeszéd előrehaladása
+        private ConversationQueue conversationQueue; //  párbeszédeket kezeli
+
+        public bool allowUserPrompt = true; // engedélyezett-e a felh. bemenet
         public ConversationManager(TextArchitect architect)
         {
             this.architect = architect;
@@ -32,15 +34,16 @@ namespace DIALOGUE
             conversationQueue = new ConversationQueue();
         }
 
-        public void Enqueue(Conversation conversation) => conversationQueue.Enqueue(conversation);
-        public void EnqueuePriority(Conversation conversation) => conversationQueue.EnqueuePriority(conversation);
+        public void Enqueue(Conversation conversation) => conversationQueue.Enqueue(conversation); // párbeszéd hozzáadása sorhoz
+        public void EnqueuePriority(Conversation conversation) => conversationQueue.EnqueuePriority(conversation); // sor elejéhez ad hozzá
 
-        private void OnUserPrompt_Next()
+        private void OnUserPrompt_Next() // felh. bemenet kezelése
         {
-            userPrompt = true;
+            if (allowUserPrompt)
+                userPrompt = true;
         }
         
-        public Coroutine StartConversation(Conversation conversation)
+        public Coroutine StartConversation(Conversation conversation) // párbeszéd indul
         {
             StopConversation();
 
@@ -53,7 +56,7 @@ namespace DIALOGUE
             return process;
         }
 
-        public void StopConversation()
+        public void StopConversation() // párbeszéd leáll
         {
             if (!isRunning)
                 return;
@@ -62,7 +65,7 @@ namespace DIALOGUE
             process = null;
         }
 
-        IEnumerator RunningConversation()
+        IEnumerator RunningConversation() // párbeszéd futását kezeli
         {
             while (!conversationQueue.IsEmpty())
             {
@@ -105,6 +108,7 @@ namespace DIALOGUE
                         //wait for user input
                         yield return WaitForUserInput();
                         CommandManager.instance.StopAllProcesses();
+                        dialogueSystem.OnSystemPrompt_Clear();
                     }
                 }
 
@@ -125,7 +129,7 @@ namespace DIALOGUE
                 conversationQueue.Dequeue();
         }
 
-        IEnumerator Line_RunDialogue(DIALOGUE_LINE line)
+        IEnumerator Line_RunDialogue(DIALOGUE_LINE line) // párbeszéd sorának kezelése
         {
             //the speaker
             /*if (line.hasDialogue)
@@ -142,7 +146,7 @@ namespace DIALOGUE
             yield return BuildLineSegments(line.dialogueData);
         }
 
-        private void HandleSpeakerLogic(DL_SPEAKER_DATA speakerData)
+        private void HandleSpeakerLogic(DL_SPEAKER_DATA speakerData) // beszélő logikájának kezelése
         {
             bool characterMustBeCreated = (speakerData.makeCharacterEnter || speakerData.isCastingPosition || speakerData.isCastingExpressions);
 
@@ -151,16 +155,16 @@ namespace DIALOGUE
             if (speakerData.makeCharacterEnter && (!character.isVisible && !character.isRevealing))
                 character.Show();
 
-            //the name
+            //neve
             dialogueSystem.ShowSpeakerName(TagManager.Inject(speakerData.displayname));
 
-            //the type od dialogue of character
+            //karakter szövegének tipusa
             DialogueSystem.instance.ApplySpeakerDataToDialogueContainer(speakerData.name);
 
             if (speakerData.isCastingPosition)
                 character.MoveToPosition(speakerData.castPosition);
 
-            //Expressions
+            //kifejezések
             if(speakerData.isCastingExpressions)
             {
                 foreach (var exp in speakerData.CastExpressions)
@@ -168,7 +172,7 @@ namespace DIALOGUE
             }
         }
 
-        IEnumerator Line_RunCommands(DIALOGUE_LINE line)
+        IEnumerator Line_RunCommands(DIALOGUE_LINE line) // parancsok futtatása
         {
             List<DL_COMMAND_DATA.Command> commands = line.commandData.commands;
 
@@ -194,7 +198,7 @@ namespace DIALOGUE
             yield return null;
         }
 
-        IEnumerator BuildLineSegments(DL_DIALOGUE_DATA line)
+        IEnumerator BuildLineSegments(DL_DIALOGUE_DATA line) //  szegmensek összeállitása
         {
             for (int i = 0; i < line.segments.Count; i++)
             {
@@ -213,10 +217,18 @@ namespace DIALOGUE
             switch(segment.startSignal)
             {
                 case DL_DIALOGUE_DATA.DIALOGUE_SEGMENT.StartSignal.C:
+                    yield return WaitForUserInput();
+                    dialogueSystem.OnSystemPrompt_Clear();
+                    break;
                 case DL_DIALOGUE_DATA.DIALOGUE_SEGMENT.StartSignal.A:
                     yield return WaitForUserInput();
                     break;
                 case DL_DIALOGUE_DATA.DIALOGUE_SEGMENT.StartSignal.WC:
+                    isWaitingOnAutoTimer = true;
+                    yield return new WaitForSeconds(segment.signalDelay);
+                    isWaitingOnAutoTimer = false;
+                    dialogueSystem.OnSystemPrompt_Clear();
+                    break;
                 case DL_DIALOGUE_DATA.DIALOGUE_SEGMENT.StartSignal.WA:
                     isWaitingOnAutoTimer = true;
                     yield return new WaitForSeconds(segment.signalDelay);
@@ -227,7 +239,7 @@ namespace DIALOGUE
             }
         }
 
-        IEnumerator BuildDialogue(string dialogue, bool append = false)
+        IEnumerator BuildDialogue(string dialogue, bool append = false) // párbeszéd összeállitása
         {
             dialogue = TagManager.Inject(dialogue);
 
@@ -254,7 +266,7 @@ namespace DIALOGUE
             }
         }
 
-        IEnumerator WaitForUserInput()
+        IEnumerator WaitForUserInput() // felh. bemenetre vár
         {
             dialogueSystem.prompt.Show();
 

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -13,11 +13,12 @@ namespace CHARACTERS
         private const float DEFAULT_TRANSITION_SPEED = 3f;
         private float transitionSpeedMultiplier = 1;
         public int layer { get; private set; } = 0;
-        public Image renderer { get; private set; } = null;
+        public Image renderer { get; private set; } = null; // aktuális sprite megjelenitésére
         public CanvasGroup renderCG => renderer.GetComponent<CanvasGroup>();
 
-        private List<CanvasGroup> oldRenders = new List<CanvasGroup>();
+        private List<CanvasGroup> oldRenders = new List<CanvasGroup>(); // előző renderer-ek listája (az átmenetek kezelésére)
 
+        // animációs coroutine és azok animációi
         private Coroutine co_transitioningLayer = null;
         private Coroutine co_levelingAlpha = null;
         private Coroutine co_changingColor = null;
@@ -27,17 +28,21 @@ namespace CHARACTERS
         public bool isLevelingAlpha => co_levelingAlpha != null;
         public bool isChangingColor => co_changingColor != null; 
         public bool isFlipping => co_flipping != null;
+
+        // inicializálás alapértelmezett értékekkel
         public CharacterSpriteLayer(Image defaultRenderer, int layer = 0)
         {
             renderer = defaultRenderer;
             this.layer = layer;
         }
 
+        // sprite hozzárendellése
         public void SetSprite(Sprite sprite)
         {
             renderer.sprite = sprite;
         }
 
+        // átmenet inditása animációként két sprite váltása között
         public Coroutine TransitionSprite(Sprite sprite, float speed = 1)
         {
             Debug.Log($"Transparition Sprite name: {sprite.name}");
@@ -64,6 +69,7 @@ namespace CHARACTERS
             co_transitioningLayer = null;
         }
 
+        // új renderer létrehozása, régiekhez hozzáadni a CanvasGroup elemet
         private Image CreateRenderer(Transform parent)
         {
             Image newRenderer = Object.Instantiate(renderer, parent);
@@ -88,21 +94,22 @@ namespace CHARACTERS
             return co_levelingAlpha;
         }
 
+        // új sprite fokozatos megjelenése, előző fokozatos eltűnése
         private IEnumerator RunAlphaLeveling()
         {
-            while(renderCG.alpha < 1 || oldRenders.Any(oldCG => oldCG.alpha > 0))
+            while(renderCG.alpha < 1 || oldRenders.Any(oldCG => oldCG.alpha > 0)) // alfa érték határozza meg, mikor kell váltani
             {
-                float speed = DEFAULT_TRANSITION_SPEED * transitionSpeedMultiplier * Time.deltaTime;
+                float speed = DEFAULT_TRANSITION_SPEED * transitionSpeedMultiplier * Time.deltaTime; // alfa érték váltásának sebessége
 
 
-                renderCG.alpha = Mathf.MoveTowards(renderCG.alpha, 1, speed);
-            
-                for(int i = oldRenders.Count - 1; i >= 0; i--)
+                renderCG.alpha = Mathf.MoveTowards(renderCG.alpha, 1, speed); // fokozatosan nő az alfa érték
+
+                for (int i = oldRenders.Count - 1; i >= 0; i--) // régieknek fokozatosan csökken az alfa 0-ig
                 {
                     CanvasGroup oldCG = oldRenders[i];
                     oldCG.alpha = Mathf.MoveTowards(oldCG.alpha, 0, speed);
 
-                    if (oldCG.alpha <= 0)
+                    if (oldCG.alpha <= 0) // amikor már eltávolitható a sprite a listából
                     {
                         oldRenders.RemoveAt(i);
                         Object.Destroy(oldCG.gameObject);
@@ -115,6 +122,7 @@ namespace CHARACTERS
             co_transitioningLayer = null;
         }
 
+        // az új és a régi renderer szinének a megváltoztatása
         public void SetColor(Color color)
         {
             renderer.color = color;
@@ -125,6 +133,7 @@ namespace CHARACTERS
             }
         }
 
+        // szinátmenet kezelése
         public Coroutine TransitionColor(Color color, float speed)
         {
             if (isChangingColor)
@@ -135,6 +144,7 @@ namespace CHARACTERS
             return co_changingColor;
         }
 
+        // szinátmenet leállitása
         public void StopChangingColor()
         {
             if (!isChangingColor)
@@ -181,6 +191,7 @@ namespace CHARACTERS
             co_changingColor = null;
         }
 
+        // arc balra animéció
         public Coroutine FaceLeft(float speed = 1, bool immediate = false)
         {
             if (isFlipping)
@@ -192,6 +203,7 @@ namespace CHARACTERS
             return co_flipping;
         }
 
+        // karakter forgatása ellenkező irányba
         public Coroutine Flip(float speed = 1, bool immediate = false)
         {
             if (isFacingLeft)
@@ -200,6 +212,7 @@ namespace CHARACTERS
                 return FaceLeft(speed, immediate);
         }
 
+        // arc jobbra animáció
         public Coroutine FaceRight(float speed = 1, bool immediate = false)
         {
             if (isFlipping)

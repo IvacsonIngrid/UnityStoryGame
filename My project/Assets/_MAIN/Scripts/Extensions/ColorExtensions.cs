@@ -1,16 +1,16 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public static class ColorExtensions
 {
-    public static Color SetAlpha(this Color original, float alpha)
+    public static Color SetAlpha(this Color original, float alpha) // átlátszóság beállitása
     {
         return new Color(original.r, original.g, original.b, alpha);
     }
 
-    public static Color GetColorFromName(this Color original, string colorName)
+    public static Color GetColorFromName(this Color original, string colorName) // syinek nevének azonositása és a megfelelő objektum visszaadása
     {
         switch(colorName.ToLower())
         {

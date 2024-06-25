@@ -1,13 +1,18 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Text.RegularExpressions;
 using System;
 using System.Linq;
 
+public static class GlobalVariables
+{
+    public static int SharedVariable = 0;
+}
+
 public class TagManager
 {
-    private static readonly Dictionary<string, Func<string>> tags = new Dictionary<string, Func<string>>()
+    private static readonly Dictionary<string, Func<string>> tags = new Dictionary<string, Func<string>>() // tagork és azok értéke
     {
         { "<mainChar>", () => "Avira" },
         { "<time>", () => DateTime.Now.ToString("hh:mm tt") },
@@ -16,9 +21,9 @@ public class TagManager
         { "<tempVall>", () => "42" }
     };
 
-    private static readonly Regex tagRegex = new Regex("<\\w+>");
+    private static readonly Regex tagRegex = new Regex("<\\w+>"); // regulțris kif. ayonositțsa sy0vegben
 
-    public static string Inject(string text, bool injectTags = true, bool injectVariables = true)
+    public static string Inject(string text, bool injectTags = true, bool injectVariables = true) // behelyettesit a szövegbe
     {
         if (injectTags)
             text = InjectTags(text);
@@ -28,7 +33,7 @@ public class TagManager
 
         return text;
     }
-    private static string InjectTags(string value)
+    private static string InjectTags(string value) // kicseréli megfelelő értékkel
     {
         if (tagRegex.IsMatch(value))
         {

@@ -26,7 +26,7 @@ public class CanvasGroupController
         this.rootCG = rootCG;
     }
 
-    public Coroutine Show(float speed = 1f, bool immediate = false)
+    public Coroutine Show(float speed = 1f, bool immediate = false) // megjelenités
     {
         if (isShowing)
             return co_showing;
@@ -42,7 +42,7 @@ public class CanvasGroupController
         return co_showing;
     }
 
-    public Coroutine Hide(float speed = 1f, bool immediate = false)
+    public Coroutine Hide(float speed = 1f, bool immediate = false) // elrejtés
     {
         if (isHiding)
             return co_hiding;
@@ -65,7 +65,7 @@ public class CanvasGroupController
         if (immediate)
             cg.alpha = alpha;
 
-        while (cg.alpha != alpha)
+        while (cg.alpha != alpha) // cél átlátszóság esetén sem
         {
             cg.alpha = Mathf.MoveTowards(cg.alpha, alpha, Time.deltaTime * DEFAULT_FADE_SPEED * speed);
             yield return null;
@@ -75,6 +75,7 @@ public class CanvasGroupController
         co_hiding = null;
     }
 
+    // interaktivitásának állítása
     public void SetInteractableState(bool active)
     {
         rootCG.interactable = active;

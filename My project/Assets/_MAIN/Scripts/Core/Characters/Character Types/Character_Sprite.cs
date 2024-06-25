@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using static TreeEditor.TextureAtlas;
 
 namespace CHARACTERS
 {
@@ -15,56 +14,61 @@ namespace CHARACTERS
         private const char SPRITESHEET_TEX_SPRITE_DELIMITER = '-';
         private CanvasGroup rootCG => root.GetComponent<CanvasGroup>();
 
-        public List<CharacterSpriteLayer> layers = new List<CharacterSpriteLayer>();
+        public List<CharacterSpriteLayer> layers = new List<CharacterSpriteLayer>(); // sprite rétegek kezelése egy karakterhez
 
-        private string artAssetsDirectory = "";
+        private string artAssetsDirectory = ""; // sprite fájlok könyvtára
 
         public override bool isVisible { 
             get { return isRevealing || rootCG.alpha == 1; }
             set { rootCG.alpha = value ? 1 : 0; }
         }
 
+        // inicializálás
         public Character_Sprite(string name, CharacterConfigData config, GameObject prefab, string rootAssetsFolder) : base(name, config, prefab)
         {
             rootCG.alpha = ENABLE_ON_START ? 1 : 0;
-            artAssetsDirectory = rootAssetsFolder + "/Images";
+            artAssetsDirectory = rootAssetsFolder + "/Images"; // beállitja a karakter minden sprite-nak fájl elérési útját
 
-            GetLayers();
+            GetLayers(); // sprite réteg betöltése
 
             Debug.Log($"Character Sprite Character: '{name}'");
         }
 
+        // sprite réteg betöltése 
         private void GetLayers()
         {
+            // renderer keresése
             Transform rendererRoot = animator.transform.Find(SPRITE_RENDERER_PARENT_NAME);
 
-            if (rendererRoot == null)
+            if (rendererRoot == null) // ha nincs, leállunk
                 return;
 
-            for (int i = 0; i < rendererRoot.transform.childCount; i++)
+            for (int i = 0; i < rendererRoot.transform.childCount; i++) // iterálióunk a child elemeken
             {
                 Transform child = rendererRoot.transform.GetChild(i);
 
-                Image rendererImage = child.GetComponent<Image>();
+                Image rendererImage = child.GetComponent<Image>(); // Image komponens lekérése
 
-                if (rendererImage != null)
+                if (rendererImage != null) // ha van Inómage - létrehozunk új Sprite elemet
                 {
                     CharacterSpriteLayer layer = new CharacterSpriteLayer(rendererImage, i);
-                    layers.Add(layer);
-                    child.name = $"Layer: {i}";
+                    layers.Add(layer); // listához adni
+                    child.name = $"Layer: {i}"; // elnevezni a réteget - indexet is hozzáadni
                 }
             }
         }
 
+        // sprite beállitása adott rétegen
         public void SetSprite(Sprite sprite, int layer = 0)
         {
             layers[layer].SetSprite(sprite);
         }
 
+        // Sprite betöltése adott név alapján
         public Sprite GetSprite(string spriteName)
         {
             Debug.Log($"sprite name: {spriteName}");
-            if(config.characterType == CharacterType.Sprite)
+            if(config.characterType == CharacterType.Sprite) // karakter tipus ayonosit'sa
             {
                 string[] data = spriteName.Split(SPRITESHEET_TEX_SPRITE_DELIMITER);
                 Debug.Log($"A hossza a data-nak: {data.Length}");
@@ -79,10 +83,10 @@ namespace CHARACTERS
                 else if (data.Length == 1) // ilyenek az alap karaktereim
                 {
                     string textureName = data[0];
-                    spriteArray = Resources.LoadAll<Sprite>($"{artAssetsDirectory}/{textureName}");
+                    spriteArray = Resources.LoadAll<Sprite>($"{artAssetsDirectory}/{textureName}"); // elérési út
                     Debug.Log($"data[0]: {data[0]}, artAssetsDirectory/textureName: {artAssetsDirectory}/{textureName}");
                 }
-                else
+                else // az alapértelmezett betöltése
                 {
                     spriteArray = Resources.LoadAll<Sprite>($"{artAssetsDirectory}/{SPRITESHEET_DEFAULT_SHEETNAME}");
                     Debug.Log($"artAssetDirectory: {artAssetsDirectory}, SPRITESHEET_DEF_SHEETNAME: {SPRITESHEET_DEFAULT_SHEETNAME}");
@@ -100,12 +104,14 @@ namespace CHARACTERS
             }
         }
 
+        // animált átmenet inditása sprite rétegen
         public Coroutine TransitionSprite(Sprite sprite, int layer = 0, float speed = 1)
         {
             CharacterSpriteLayer spriteLayer = layers[layer];
             return spriteLayer.TransitionSprite(sprite, speed);
         }
 
+        // katakter fokozatos elrejtése, megjelenitése
         public override IEnumerator ShowingOrHiding(bool show)
         {
             float targetAlpha = show ? 1f : 0;
@@ -121,6 +127,7 @@ namespace CHARACTERS
             co_hiding = null;
         }
 
+        // syin beállitása a sprite-on
         public override void SetColor(Color color)
         {
             base.SetColor(color);
@@ -133,6 +140,7 @@ namespace CHARACTERS
             }
         }
 
+        // animáét szinátmenet karakter sprite rétegen
         public override IEnumerator ChangingColor(float speed)
         {
             foreach (CharacterSpriteLayer layer in layers)
@@ -148,6 +156,7 @@ namespace CHARACTERS
             co_changingColor = null;
         }
 
+        // fény - árnyék beállitása
         public override IEnumerator Highlighting(float speedMultiplier, bool immediate = false)
         {
             Color targetColor = displayColor;

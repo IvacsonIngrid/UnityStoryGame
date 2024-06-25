@@ -1,4 +1,4 @@
-using DIALOGUE;
+﻿using DIALOGUE;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +11,12 @@ namespace CHARACTERS
     {
         public static CharacterManager instance { get; private set; }
         
-        public Character[] allCharacters => characters.Values.ToArray();
-        private Dictionary<string, Character> characters = new Dictionary<string, Character>();
+        public Character[] allCharacters => characters.Values.ToArray(); // minden karaktert egy tömbbe
+        private Dictionary<string, Character> characters = new Dictionary<string, Character>(); // nevet társit karakter objektumhoy
 
-        private CharacterConfigSO config => DialogueSystem.instance.config.characterConfigAsset;
+        private CharacterConfigSO config => DialogueSystem.instance.config.characterConfigAsset; // karakróter konfigurációját adja vissza
 
+        // konstans, milyen formában találhato meg a karakter neve es objektuma a kornyezetben
         private const string CHARACTER_CASTING_ID = " as ";
         private const string CHARACTER_NAME_ID = "<charname>";
         public string characterRootPathFormat => $"Characters/{CHARACTER_NAME_ID}";
@@ -24,23 +25,26 @@ namespace CHARACTERS
 
 
         [SerializeField] private RectTransform _characterpanel = null;
-        public RectTransform characterPanel => _characterpanel;
+        public RectTransform characterPanel => _characterpanel; // karakter szülő elem
 
+        // alap beállitás
         private void Awake()
         {
             instance = this;
         }
 
+        // konfigurációs adatok lekérése
         public CharacterConfigData GetCharacterConfig(string characterName)
         {
             return config.GetConfig(characterName);
         }
 
+        // karakter visszatéritése név alapján
         public Character GetCharacter(string characterName, bool createIfDoesNotExist = false)
         {
-            if (characters.ContainsKey(characterName.ToLower()))
+            if (HasCharacter(characterName))
                 return characters[characterName.ToLower()];
-            else if (createIfDoesNotExist)
+            else if (createIfDoesNotExist) // ha nincs találat, akkor létrehoz egyet
                 return CreateCharacter(characterName);
 
             return null;
@@ -50,7 +54,7 @@ namespace CHARACTERS
 
         public Character CreateCharacter(string characterName, bool revealAfterCreation = false)
         {
-            if (characters.ContainsKey(characterName.ToLower()))
+            if (HasCharacter(characterName))
             {
                 Debug.LogWarning($"A character called '{characterName}' already exists. Did not create the character.");
                 return null;
@@ -93,8 +97,9 @@ namespace CHARACTERS
             return Resources.Load<GameObject>(prefabPath);
         }
 
-        public string FormatCharacterPath(string path, string characterName) => path.Replace(CHARACTER_NAME_ID, characterName);
+        public string FormatCharacterPath(string path, string characterName) => path.Replace(CHARACTER_NAME_ID, characterName); // karakter útvonalát formázza
 
+        // karakter létrehozása információ alapján
         private Character CreateCharacterFromInfo(CHARACTER_INFO info)
         {
             CharacterConfigData config = info.config;
@@ -115,6 +120,7 @@ namespace CHARACTERS
             }
         }
 
+        // karakterek rendezése (aktiv - inaktiv)
         public void SortCharacters()
         {
             List<Character> activeCharacters = characters.Values.Where(c => c.root.gameObject.activeInHierarchy && c.isVisible).ToList();
@@ -125,7 +131,7 @@ namespace CHARACTERS
 
             SortCharacters(activeCharacters);
         }
-
+        // karakter rendezés - név szerint
         public void SortCharacters(string[] characterNames)
         {
             List<Character> sortedCharacters = new List<Character>();
@@ -153,6 +159,7 @@ namespace CHARACTERS
             SortCharacters(allCharacters);
         }
 
+        // karakter rendezés - adott szempont alapján (társitott érték)
         private void SortCharacters(List<Character> charactersSortingOrder)
         {
             int i = 0;
@@ -163,6 +170,7 @@ namespace CHARACTERS
             }
         }
 
+        // belső osztály az adattagokkal
         private class CHARACTER_INFO
         {
             public string name = "";

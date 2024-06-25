@@ -27,7 +27,7 @@ namespace COMMANDS
 
         private static IEnumerator ClearLayerMedia(string[] data)
         {
-            //parameters
+            //paraméterek
             string panelName = "";
             int layer = 0;
             float transitionSpeed = 0;
@@ -36,10 +36,10 @@ namespace COMMANDS
 
             Texture blendTex = null;
 
-            //get the parameters
+            // parancshoz tartozó paraméterek betöltése
             var parameters = ConvertDataToParameters(data);
 
-            //get the panel that this media is applied to
+            // panel lekérése név alapján
             parameters.TryGetValue(PARAM_PANEL, out panelName);
             GraphicPanel panel = GraphicPanelManager.instance.GetPanel(panelName);
 
@@ -49,24 +49,24 @@ namespace COMMANDS
                 yield break;
             }
 
-            //get the layer to apply the graphic to
+            // réteg lekérése
             parameters.TryGetValue(PARAM_LAYER, out layer, defaultValue: -1);
 
-            //get if we have an immediate effect
+            // azonnali kell-e legyen az átmenet
             parameters.TryGetValue(PARAM_IMMEDIATE, out immediate, defaultValue: false);
 
-            //if it is not an immediate effect, get the speed of the transition
+            // ha nem, akkor milyen a sebesség
             if (!immediate)
                 parameters.TryGetValue(PARAM_SPEED, out transitionSpeed, defaultValue: 1);
 
-            //get the blending texture for the media
+            // átmeneti textúra lekérése
             parameters.TryGetValue(PARAM_BLENDTEX, out blendTexName);
 
             if (!immediate && blendTexName != string.Empty)
                 blendTex = Resources.Load<Texture>(FilePaths.resources_blendTextures + blendTexName);
 
             if (layer == -1)
-                panel.Clear(transitionSpeed, blendTex, immediate);
+                panel.Clear(transitionSpeed, blendTex, immediate); // panel tisztitása
             else
             {
                 GraphicLayer graphicLayer = panel.GetLayer(layer);
@@ -77,13 +77,14 @@ namespace COMMANDS
                     yield break;
                 }
 
-                graphicLayer.Clear(transitionSpeed, blendTex, immediate);
+                graphicLayer.Clear(transitionSpeed, blendTex, immediate); // réteg tisztitása
             }
         }
 
+        // réteg beállitása
         private static IEnumerator SetLayerMedia(string[] data)
         {
-            //parameters
+            //paraméterek
             string panelName = "";
             int layer = 0;
             string mediaName = "";
@@ -96,10 +97,10 @@ namespace COMMANDS
             UnityEngine.Object graphic = null;
             Texture blendTex = null;
 
-            //get the parameters
+            //parancshoz tartozó paraméterek elérése
             var parameters = ConvertDataToParameters(data);
 
-            //get the panel that this media is applied to
+            // panel lekérése név alapján
             parameters.TryGetValue(PARAM_PANEL, out panelName);
             GraphicPanel panel = GraphicPanelManager.instance.GetPanel(panelName);
 
@@ -109,26 +110,26 @@ namespace COMMANDS
                 yield break;
             }
 
-            //get the layer to apply the graphic to
+            // réteg lekérdezése
             parameters.TryGetValue(PARAM_LAYER, out layer, defaultValue: 0);
 
-            //get the graphic
+            // média elem lekérdezése
             parameters.TryGetValue(PARAM_MEDIA, out mediaName);
 
-            //get if we have an immediate effect
+            // azonnali kell-e legyen a váltás
             parameters.TryGetValue(PARAM_IMMEDIATE, out immediate, defaultValue: false);
 
-            //if it is not an immediate effect, get the speed of the transition
+            // ha nem, akkor a sebesség lekérése
             if (!immediate)
                 parameters.TryGetValue(PARAM_SPEED, out transitionSpeed, defaultValue: 1);
 
-            //get the blending texture for the media
+            // az átmenet textúrája
             parameters.TryGetValue(PARAM_BLENDTEX, out blendTexName);
 
-            //if we have a video, get whether we use audio from the video or not
+            // használ-e videot
             parameters.TryGetValue(PARAM_USEVIDEOAUDIO, out useAudio, defaultValue: false);
 
-            //RUN
+            // grafikus elem elérési útvonala, btültése
             pathToGraphic = GetPathToGraphic(FilePaths.resources_backgroundImages, mediaName);
             graphic = Resources.Load<Texture>(pathToGraphic);
 
@@ -147,16 +148,16 @@ namespace COMMANDS
             if (!immediate && blendTexName != string.Empty)
                 blendTex = Resources.Load<Texture>(FilePaths.resources_blendTextures + blendTexName);
 
-            //get the layer to apply the media to
+            // réteg lekérdezése, vagy létrehozása
             GraphicLayer graphicLayer = panel.GetLayer(layer, createIfDoesNotExist: true);
 
             if (graphic is Texture)
             {
-                yield return graphicLayer.SetTexture(graphic as Texture, transitionSpeed, blendTex, pathToGraphic, immediate);
+                yield return graphicLayer.SetTexture(graphic as Texture, transitionSpeed, blendTex, pathToGraphic, immediate);  // textúra beállitás
             }
             else
             {
-                yield return graphicLayer.SetVideo(graphic as VideoClip, transitionSpeed, useAudio, blendTex, pathToGraphic, immediate);
+                yield return graphicLayer.SetVideo(graphic as VideoClip, transitionSpeed, useAudio, blendTex, pathToGraphic, immediate); // videó beállitás
             }
         }
 

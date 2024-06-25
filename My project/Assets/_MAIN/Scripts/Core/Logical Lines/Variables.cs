@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -9,10 +9,10 @@ public class Variables
     private const string DEFAULT_DATABASE_NAME = "Default";
     public const char DATABASE_VARIABLE_RELATIONAL_ID = '.';
     public static readonly string REGEX_VARIABLE_IDS = @"[!]?\$[a-zA-Z0-9_.]+";
-    public const char VARIABLE_ID = '$';
+    public const char VARIABLE_ID = '$'; // jele, hogy változó következik
     
-    public class Database
-    {
+    public class Database // belső osztály - tartalmaz nevet és egy szótárt a változókból
+    { 
         public string name;
         public Dictionary<string, Variable> variables = new Dictionary<string, Variable>();
         public Database(string name)
@@ -22,13 +22,13 @@ public class Variables
         }
     }
 
-    public abstract class Variable
+    public abstract class Variable // meghatározza a változók alapvető működését
     {
         public abstract object Get();
         public abstract void Set(object value);
     }
 
-    public class Variable<T> : Variable
+    public class Variable<T> : Variable // generikus - konkrét tipusú változókat valósit meg
     {
         private T value;
         private Func<T> get;
@@ -53,9 +53,11 @@ public class Variables
         public override void Set(object newValue) => set((T)newValue);
     }
 
+    // tartalmazza az összes adatbázist - az alapértelmezettet is
     private static Dictionary<string, Database> databases = new Dictionary<string, Database>() { { DEFAULT_DATABASE_NAME, new Database(DEFAULT_DATABASE_NAME) } };
     private static Database defaultDatabase => databases[DEFAULT_DATABASE_NAME];
 
+    // új adatbázis létrehozása
     public static bool CreateDatabase(string name)
     {
         if (!databases.ContainsKey(name))
@@ -67,6 +69,7 @@ public class Variables
         return false;
     }
 
+    // adatbázis lekérése név alapján - létrehozza, ha nem létezik
     public static Database GetDatabase(string name)
     {
         if (name == string.Empty)
@@ -78,6 +81,7 @@ public class Variables
         return databases[name];
     }
 
+    // kiirja az összes adatbázis nevét
     public static void PrintAllDatabase()
     {
         foreach (KeyValuePair<string, Database> keyValuePair in databases)
@@ -86,6 +90,7 @@ public class Variables
         }
     }
 
+    // új változó a megadott névvel, értékkel, opcionálisan getter, setter függvényekkel
     public static bool CreateVariable<T>(string name, T value, Func<T> getter = null, Action<T> setter = null)
     {
         (string[] parts, Database db, string variableName) = ExtractInfo(name);
@@ -98,6 +103,7 @@ public class Variables
         return true;
     }
 
+    // adott nevő változó lekérése
     public static bool TryGetValue(string name, out object variable)
     {
         (string[] parts, Database db, string variableName) = ExtractInfo(name);
@@ -113,6 +119,7 @@ public class Variables
         return true;
     }
 
+    // adott nevű változó értékének beállitása
     public static bool TrySetValue<T>(string name, T value)
     {
         (string[] parts, Database db, string variableName) = ExtractInfo(name);
@@ -124,7 +131,7 @@ public class Variables
         return true;
     }
 
-    private static (string[], Database, string) ExtractInfo(string name)
+    private static (string[], Database, string) ExtractInfo(string name) // szétbontja adatbázisra, változónévre
     {
         string[] components = name.Split(DATABASE_VARIABLE_RELATIONAL_ID);
         Database db = components.Length > 1 ? GetDatabase(components[0]) : defaultDatabase;
@@ -162,7 +169,7 @@ public class Variables
         Debug.Log(builder.ToString());
     }
 
-    public static bool HasVariable(string name)
+    public static bool HasVariable(string name) // létezik-e az adott nevű változó
     {
         string[] parts = name.Split(DATABASE_VARIABLE_RELATIONAL_ID);
         Database db = parts.Length > 1 ? GetDatabase(parts[0]) : defaultDatabase;
@@ -171,7 +178,7 @@ public class Variables
         return db.variables.ContainsKey(variableName);
     }
 
-    public static void RemoveVariable(string name)
+    public static void RemoveVariable(string name) // törli megadott nevű változót
     {
         (string[] components, Database db, string variableName) = ExtractInfo(name);
 

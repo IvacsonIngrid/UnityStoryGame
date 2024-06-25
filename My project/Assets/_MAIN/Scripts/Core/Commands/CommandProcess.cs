@@ -7,14 +7,15 @@ using UnityEngine.Events;
 
 public class CommandProcess
 {
-    public Guid ID;
+    public Guid ID; // folyamat egyedi azonositója
     public string processName;
-    public Delegate command;
-    public CoroutineWrapper runningProcess;
+    public Delegate command; // folyamat, amit aparancs futtat
+    public CoroutineWrapper runningProcess; // parancs végrehajtásáért felel
     public string[] args;
 
-    public UnityEvent onTerminateAction;
+    public UnityEvent onTerminateAction; // esemény, ami a folyamat megszakitásakor lép életbe
 
+    // parancs inicializálása
     public CommandProcess(Guid id, string processName, Delegate command, CoroutineWrapper runningProcess, string[] args, UnityEvent onTerminateAction = null)
     {
         ID = id;

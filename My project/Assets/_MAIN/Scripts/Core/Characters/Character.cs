@@ -1,4 +1,4 @@
-using DIALOGUE;
+﻿using DIALOGUE;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -11,24 +11,29 @@ namespace CHARACTERS
 {
     public abstract class Character
     {
+        // karakter viselkedését és megjelenését befolyásoló konstansok
         public const bool ENABLE_ON_START = true;
         private const float UNHIGHLIGHTED_DARKEN_STRENGTH = 0.65f;
         public const bool DEFAULT_ORIENTATION_IS_FACING_LEFT = true;
         public const string ANIMATION_REFRESH_TRIGGER = "Refresh";
 
+        // karakter neve és a megjelenitett neve
         public string name = "";
         public string displayName = "";
-        public RectTransform root = null;
-        public CharacterConfigData config;
-        public Animator animator;
-        public Color color { get; protected set; } = Color.white;
-        protected Color displayColor => highlighted ? highlightedColor : unhighlightedColor;
+
+        public RectTransform root = null; // a megjelenités gyökérpontja
+        public CharacterConfigData config; // konfihurációs értékek tárolása (szin, betu...)
+        public Animator animator; // karakter animáció kezelésre
+        public Color color { get; protected set; } = Color.white; // karakter szine
+        protected Color displayColor => highlighted ? highlightedColor : unhighlightedColor; 
         protected Color highlightedColor => color;
         protected Color unhighlightedColor => new Color(color.r * UNHIGHLIGHTED_DARKEN_STRENGTH, color.g * UNHIGHLIGHTED_DARKEN_STRENGTH, color.b * UNHIGHLIGHTED_DARKEN_STRENGTH, color.a);
-        public bool highlighted { get; protected set; } = true;
-        protected bool facingLeft = DEFAULT_ORIENTATION_IS_FACING_LEFT;
+        public bool highlighted { get; protected set; } = true; // karakter megvilágitása
+        protected bool facingLeft = DEFAULT_ORIENTATION_IS_FACING_LEFT; // arc fordulása
 
-        public int priority { get; protected set; }
+        public int priority { get; protected set; } // karakterek sorrendje
+
+        public Vector2 targetPosition { get; private set; }
         protected CharacterManager characterManager => CharacterManager.instance;
 
         public DialogueSystem dialogueSystem => DialogueSystem.instance;
@@ -50,6 +55,7 @@ namespace CHARACTERS
         public bool isFacingRight => !facingLeft;
         public bool isFlipping => co_flipping != null;
 
+        // alapbeállitásai a karakternek
         public Character(string name, CharacterConfigData config, GameObject prefab)
         {
             this.name = name;
@@ -69,6 +75,7 @@ namespace CHARACTERS
             }
         }
 
+        // karakter duóialogusának megjelenitáse
         public Coroutine Say(string dialogue) => Say(new List<string> { dialogue });
         public Coroutine Say(List<string> dialogue) 
         {
@@ -78,7 +85,7 @@ namespace CHARACTERS
             return dialogueSystem.Say(dialogue);  
         }
 
-        //Alab beallitasu karakterek szin es font modositasa
+        //Alab beallitasu karakterek nevének szin es szoveg tipus modositasa
         public void SetNameColor(Color color) => config.nameColor = color;
         public void SetDialogueColor(Color color) => config.dialogueColor = color;
         public void SetNameFont(TMP_FontAsset font) => config.nameFont = font;
@@ -88,6 +95,7 @@ namespace CHARACTERS
         //alap beallitas visszaallitasa
         public void ResetConfigurationData() => config = CharacterManager.instance.GetCharacterConfig(name);
 
+        // karakter megjelenése
         public virtual Coroutine Show()
         {
             if (isRevealing)
@@ -102,6 +110,7 @@ namespace CHARACTERS
             return co_revealing;
         }
 
+        // karakter elrejtése
         public virtual Coroutine Hide()
         {
             if (isHiding)
@@ -122,6 +131,7 @@ namespace CHARACTERS
             yield return null;
         }
 
+        // karakter elhelyezése adott pozicióba
         public virtual void SetPosition(Vector2 position)
         {
             if (root == null) //root != null
@@ -131,8 +141,11 @@ namespace CHARACTERS
 
             root.anchorMin = minAnchorTarget;
             root.anchorMax = maxAnchorTarget;
+
+            targetPosition = position;
         }
 
+        // karakter mozgatása adott pozicióig
         public virtual Coroutine MoveToPosition(Vector2 position, float speed = 2f, bool smooth = false)
         {
             if (root == null) //root != null
@@ -142,6 +155,8 @@ namespace CHARACTERS
                 characterManager.StopCoroutine(co_moving);
 
             co_moving = characterManager.StartCoroutine(MovingToPosition(position, speed, smooth));
+
+            targetPosition = position;
 
             return co_moving;
         }
@@ -209,6 +224,7 @@ namespace CHARACTERS
             yield return null;
         }
 
+        // karakter megvilágitása
         public Coroutine Highlight(float speed = 1f, bool immediate = false)
         {
             if (isHighlighting || isUnHighlighting)
@@ -221,6 +237,7 @@ namespace CHARACTERS
             return co_highlighting;
         }
 
+        // karakter árnyékolása
         public Coroutine UnHighlight(float speed = 1f, bool immediate = false)
         {
             if (isUnHighlighting || isUnHighlighting)
@@ -239,6 +256,7 @@ namespace CHARACTERS
             yield return null;
         }
 
+        // karakter forgatása, irány változtatása 2 lehetőséggel
         public Coroutine Flip(float speed = 1, bool immediate = false)
         {
             if (isFacingLeft)
@@ -275,6 +293,7 @@ namespace CHARACTERS
             yield return null;
         }
 
+        // karakterek sorrendjének a meghatározása (priotizálás)
         public void SetPriority(int priority, bool autoSortCharactersOnUI = true)
         {
             this.priority = priority;
@@ -283,6 +302,7 @@ namespace CHARACTERS
                 characterManager.SortCharacters();
         }
 
+        // Unity Editor-ban definiált animációk kezelése
         public void Animate(string animation)
         {
             animator.SetTrigger(animation);
@@ -305,6 +325,7 @@ namespace CHARACTERS
             return;
         }
 
+        // lehetséges karakter tipusok (végül az első kettő van alkalmazva)
         public enum CharacterType
         {
             Text,

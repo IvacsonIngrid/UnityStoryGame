@@ -9,8 +9,8 @@ namespace DIALOGUE
     public class NameContainer
     {
         [SerializeField] private GameObject root;
-        [SerializeField] private TextMeshProUGUI nameText;
-        public void Show(string nameToShow = "")
+        [field:SerializeField] public TextMeshProUGUI nameText { get; private set;  } // megjelenitéshez
+        public void Show(string nameToShow = "") // megjeleniti a nevet
         {
             root.SetActive(true);
 
@@ -18,11 +18,12 @@ namespace DIALOGUE
                 nameText.text = nameToShow;
         }
 
-        public void Hide()
+        public void Hide() // elrejti a nevet
         {
             root.SetActive(false);
         }
 
+        // név tulajdonságainak beállitása
         public void SetNameColor(Color color) => nameText.color = color;
         public void SetNameFont(TMP_FontAsset font) => nameText.font = font;
 

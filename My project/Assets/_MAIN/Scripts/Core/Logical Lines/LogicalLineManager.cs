@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,9 @@ namespace DIALOGUE.LogicalLines
     {
         private DialogueSystem dialogueSystem => DialogueSystem.instance;
         private List<ILogicalLine> logicalLines = new List<ILogicalLine>();
-        public LogicalLineManager() => LoadLogicalLines();
+        public LogicalLineManager() => LoadLogicalLines(); // betölti az összes elérhető ILogicalLine implementációt
+
+        // a tipusok létrehozása, hozzáadása
         private void LoadLogicalLines()
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
@@ -27,11 +29,11 @@ namespace DIALOGUE.LogicalLines
         }
         public bool TryGetLogic(DIALOGUE_LINE line, out Coroutine coroutine)
         {
-            foreach (var logicalLine in logicalLines)
+            foreach (var logicalLine in logicalLines) // a betöltött implementációk elemein dolgozik
             {
                 if (logicalLine.Matches(line))
                 {
-                    coroutine = dialogueSystem.StartCoroutine(logicalLine.Execute(line));
+                    coroutine = dialogueSystem.StartCoroutine(logicalLine.Execute(line)); // végrehajtás elinditása
                     return true;
                 }
             }

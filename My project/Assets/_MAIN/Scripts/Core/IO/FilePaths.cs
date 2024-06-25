@@ -1,7 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FilePaths
 {
+    // gyökér mappa megadása
     public static readonly string root = $"{Application.dataPath}/gameData/";
     //public static readonly string root = $"{Application.dataPath}/_MAIN/Resources";
 
@@ -22,6 +23,11 @@ public class FilePaths
 
     //Resource path - chapters
     public static readonly string resource_dialogueFile = $"Dialogue Files/";
+    
+    //Resource path - text
+    public static readonly string resource_font = "Font/";
+
+    // elérési útvonal meghatározása annak függvényében, hogy a gyökérkönyvtártól érkezik vagy csak erőforrás neve kell
     public static string GetPathToResource(string defaultPath, string resourceName)
     {
         if (resourceName.StartsWith(HOME_DIRECTORY_SYMBOL))

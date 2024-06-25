@@ -1,25 +1,26 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
 public class FileManager
 {
+    // szöveges állományok sorainak kinyerése listába
     public static List<string> ReadTextFile(string filePath, bool includeBlankLines = true)
     {
-        if (!filePath.StartsWith('/'))
+        if (!filePath.StartsWith('/')) // ha nem abszolut útvonal, hozzáadja a gyökér elérési útvonalát
             filePath = FilePaths.root + filePath;
 
         List<string> lines = new List<string>();
         try
         {
-            using (StreamReader sr = new StreamReader(filePath))
+            using (StreamReader sr = new StreamReader(filePath)) // fájl olvasása
             {
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
                     if (includeBlankLines || !string.IsNullOrWhiteSpace(line))
-                        lines.Add(line);
+                        lines.Add(line); // sor hozzáadása
                 }
             }
         } 
@@ -42,6 +43,7 @@ public class FileManager
         return ReadTextAsset(asset, includeBlankLines);
     }
 
+    // textAsset tipusu erőforrásból olvas, lsitába teszi a sorokat
     public static List<string> ReadTextAsset(TextAsset asset, bool includeBlankLines = true)
     {
         List<string> lines = new List<string>();
